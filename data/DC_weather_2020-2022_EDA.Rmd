@@ -1,0 +1,41 @@
+---
+title: "DC_weather_2020-2022_EDA"
+author: "Emily"
+date: "2022-09-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. 
+
+##Historical weather data for Washington, DC
+
+I was curious to see that one can download, without creating an account, weather data from NOAA. One does need to submit a request (it uses a shopping cart convention, though the data are free) and provide an email address; a link will be emailed within a few minutes, depending on the volume of requests. 
+
+I decided to download data for my current hometown, Washington, DC. I thought it could be interesting to look at temporal trends in daily weather records-- temperature, namely, but also windspeed (given my interest in sailing) and precipitation. If I could look at time seies data all the way back to 1869 (which appears to be the earliest year), maybe I could observe climate trends? 
+
+But, all time-series data (back to the 1800s) were too large to download... (NOAA limits downloads). So I decided just to look at recent years. 
+
+I also wonder if weather patterns changed as a result of the pandemic. Might less traffic lead to reduced wind speeds? Or less energy and heat retention in the city, so lower temperatures? Maybe I can find out... or, at least look for correlations (likely will not be able to determined causation with any kind of certainty).
+
+```{r, results="asis"}
+DCweath <- data.frame(read.csv("3089711.csv"))
+str(DCweath)                      
+
+```
+
+```{r, results="asis"}
+head(DCweath, n=5)
+tail(DCweath, n=2)
+```
+```{r, results="asis"}
+summary(DCweath$TMAX)
+
+```
