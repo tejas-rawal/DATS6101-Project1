@@ -17,7 +17,7 @@ When you click the **Knit** button a document will be generated that includes bo
 
 ##Historical weather data for Washington, DC
 
-I was curious to see that one can download, without creating an account, weather data from NOAA. One does need to submit a request (it uses a shopping cart convention, though the data are free) and provide an email address; a link will be emailed within a few minutes, depending on the volume of requests. 
+I was glad to see that one can download, without creating an account, weather data from NOAA. One does need to submit a request (it uses a shopping cart convention, though the data are free) and provide an email address; a link will be emailed within a few minutes, depending on the volume of requests. 
 
 I decided to download data for my current hometown, Washington, DC. I thought it could be interesting to look at temporal trends in daily weather records-- temperature, namely, but also windspeed (given my interest in sailing) and precipitation. If I could look at time seies data all the way back to 1869 (which appears to be the earliest year), maybe I could observe climate trends? 
 
@@ -26,7 +26,7 @@ But, all time-series data (back to the 1800s) were too large to download... (NOA
 I also wonder if weather patterns changed as a result of the pandemic. Might less traffic lead to reduced wind speeds? Or less energy and heat retention in the city, so lower temperatures? Maybe I can find out... or, at least look for correlations (likely will not be able to determined causation with any kind of certainty).
 
 ```{r, results="asis"}
-DCweath <- data.frame(read.csv("3089711.csv"))
+DCweath <- data.frame(read.csv("DC_weather_2020-2022.csv"))
 str(DCweath)                      
 
 ```
