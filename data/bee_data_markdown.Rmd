@@ -1,0 +1,34 @@
+---
+title: "bee_data"
+author: "Chris W"
+date: "2022-09-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Bee Data
+
+I thought it could be interesting to look at local bee populations and potentially pair it with some other local data like weather. I ended up digging through a lot of random insect databases and ended up finding a database from https://www.nature.com/articles/s41597-020-00577-0.
+
+I was able to download the author's dataset from: https://figshare.com/articles/dataset/Mid-Atlantic_USA_wild_bee_occurrences_all_records/10266458
+
+
+
+```{r }
+
+bee_data <- data.frame(read.csv("1OccurrenceLevel_AllBees.csv"))
+
+```
+
+
+The dataset is pretty big, it contains `r nrow(bee_data)` rows and `r ncol(bee_data)` columns.
+
+Full dataset structure below:
+
+```{r}
+str(bee_data)
+
+```
