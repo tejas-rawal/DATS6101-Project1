@@ -4,3 +4,20 @@
 Each team will submit one proposal on Blackboard. Use 150-200 words to 
 describe a) the research topic, b) the SMART question(s) of your research (you can still change them afterwards), 
 c) the source of your data set(s) and how many (roughly) observations, and d) the link to the teams
+
+a)  
+We propose to study weather trends in or around New York city over the past 50 years. We have found data
+from NOAA (https://www.ncei.noaa.gov/cdo) that include daily maximum and minimum temperatures, precipation levels, and more.  
+We are starting with two-year windows for each decade dating back to 1950; the data for 2020-2022 include
+X observations; we anticipate 7X observations total.
+
+b)  
+Are there statistically measurable changes in weather (e.g., temperature and precipitation levels) 
+in the New York area over a 50-year window?  
+
+Are there any notable (and statistically significant) changes in weather patterns after/during the 
+pandemic lockdown?
+
+Do the observed changes in weather in New York City align with documented global patterns?
+
+
