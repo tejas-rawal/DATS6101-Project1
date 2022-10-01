@@ -25,6 +25,8 @@ These are just some initial thoughts, but definitely open to discuss others!
 ## NYweath  
 I found a more-complete data set for New York that incudes daily minimum temperatures, maximum temperatures, precipitation, and more. The file here includes data from 2020 to the current month-- additional data can be downloaded in batches (there is a size cap). Some initial trends are visible. The periodicity of temperatures with seasons are clear; would likely need to fit the data to a model before being able to draw conclusions about statistically significant changes in, e.g., temperature year-to-year. Could alternately look at, say, averages for a specific month and compare those year-to-year.
 
+**Chris W Edit:** Uploaded the 1869-2022 version of this dataset. The file contains daily weather summaries to include the minimum & maximum temperatures, precipitation, and additional weather types. All records are collected from a Central Park weather station.
+
 ### Some ideas for exploratory questions  
 1. Are there any statistically significant shifts in weather trends (temp, precip, wind) after the onset of COVID and initial lockdown (e.g., due to changes in large-scale travel patterns in/around the city)?  
 2. When (under what conditions) is precipitation most likely in NYC (e.g., season, temperature, etc.) in a given year?  
