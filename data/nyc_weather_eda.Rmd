@@ -1,0 +1,91 @@
+---
+title: "NYC Weather Data Preliminary EDA"
+author: "Tejas Rawal"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+---
+
+```{r init, include=F}
+# The package "ezids" (EZ Intro to Data Science) includes a lot of the helper functions we developed for the course. 
+# Some of the frequently used functions are loadPkg(), xkabledply(), xkablesummary(), uzscale(), etc.
+library(ezids)
+# tidyverse includes ggplot2
+library(tidyverse)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+options(scientific=T, digits = 3) 
+```
+
+# NYC Weather Data: Temperature analysis
+
+```{r load data}
+nyc_weather <- tibble(read.csv("NYC_weather_1869_2022.csv"))
+# view structure
+str(nyc_weather)
+# get summary
+xkablesummary(nyc_weather)
+```
+
+Convert DATE column from `char` to `Date` type
+```{r}
+nyc_weather <- nyc_weather %>%
+  mutate(DATE = as.Date(DATE, format="%Y-%m-%d"))
+
+# review dataset structure
+xkablesummary(nyc_weather)
+```
+
+Add a MONTH column to the dataset. The month is extracted from the DATE.
+```{r}
+nyc_weather <- nyc_weather %>%
+  mutate(MONTH = month(DATE))
+
+# review dataset structure
+xkablesummary(nyc_weather)
+```
+
+
+### Average daily temperature max and min by month, all time
+```{r temperature analysis}
+# group data by month
+# and calculate average
+nyc_weather_by_month <- nyc_weather %>%
+  group_by(MONTH) %>%
+  summarize(avg_temp_max = mean(TMAX, na.rm=T), avg_temp_min = mean(TMIN, na.rm=T), na.rm = T)
+
+# Create line plot
+# TODO: convert month number to name
+nyc_weather_by_month %>%
+  ggplot(aes(x=MONTH)) +
+  geom_line(aes(y = avg_temp_max), color = "darkred") +
+  geom_line(aes(y = avg_temp_min), color="steelblue", linetype="dotted")
+```
+
+### Average daily temperature max and min by month, pre 1879-1900
+```{r temperature analysis}
+# filter weather data for years 1879-1900
+nyc_weather %>%
+  filter()
+
+```
+
+### Average daily temperature max and min by month, post 1900-1930
+```{r temperature analysis}
+```
+
+### Average daily temperature max and min by month, post 1950-1980 century
+```{r temperature analysis}
+```
+
+### Average daily temperature max and min by month, post 1950 century
+```{r temperature analysis}
+```
