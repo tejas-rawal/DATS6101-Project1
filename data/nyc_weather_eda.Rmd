@@ -47,7 +47,7 @@ xkablesummary(nyc_weather)
 Add a MONTH column to the dataset. The month is extracted from the DATE.
 ```{r}
 nyc_weather <- nyc_weather %>%
-  mutate(MONTH = month(DATE))
+  mutate(MONTH = month(DATE, label=T))
 
 # review dataset structure
 xkablesummary(nyc_weather)
@@ -63,11 +63,12 @@ nyc_weather_by_month <- nyc_weather %>%
   summarize(avg_temp_max = mean(TMAX, na.rm=T), avg_temp_min = mean(TMIN, na.rm=T), na.rm = T)
 
 # Create line plot
-# TODO: convert month number to name
+# TODO: Add legend for each line
 nyc_weather_by_month %>%
-  ggplot(aes(x=MONTH)) +
-  geom_line(aes(y = avg_temp_max), color = "darkred") +
-  geom_line(aes(y = avg_temp_min), color="steelblue", linetype="dotted")
+  ggplot(aes(x=MONTH, group=1)) +
+  geom_line(aes(y=avg_temp_max), color="red") +
+  geom_line(aes(y=avg_temp_min), color="steelblue", linetype=4) +
+  labs(x="Month", y="Mean Temperate (°F)")
 ```
 
 ### Average daily temperature max and min by month, pre 1879-1900
@@ -89,3 +90,5 @@ nyc_weather %>%
 ### Average daily temperature max and min by month, post 1950 century
 ```{r temperature analysis}
 ```
+
+### Temperature vs Rain amount 2D Density plot
