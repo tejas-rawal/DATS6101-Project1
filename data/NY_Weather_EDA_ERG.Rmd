@@ -1,0 +1,141 @@
+---
+title: "Project 1 EDA"
+author: "Emily"
+date: "2022-10-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r, results="asis"}
+NYweath <- data.frame(read.csv("NYC_weather_1869_2022.csv"))
+str(NYweath)                      
+head(NYweath, n=5)
+tail(NYweath, n=2)
+
+```
+
+```{r, r = "as is"}
+library(ggplot2)
+library(ezids)
+library(dplyr)
+
+#converting to R date format and adding columns for day, month, and year
+NYweath$DATE <- as.Date(NYweath$DATE)
+NYweath$day <- format(NYweath$DATE, format="%d")
+NYweath$month <- format(NYweath$DATE, format="%m")
+NYweath$year <- format(NYweath$DATE, format="%Y")
+
+#converting temperature observations to numerics
+NYweath$TMAX <- as.numeric(NYweath$TMAX)
+NYweath$TMIN <- as.numeric(NYweath$TMIN)
+NYweath$TAVG <- as.numeric(NYweath$TAVG)
+
+#creating a subset of the weather data that are only date- and temperature-related
+NYweath_temp <- subset(NYweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG)) 
+```
+
+## First attempt to visualize temperature trends
+Let's try to plot the max temp recorded each day in Central Park over time.
+
+``` {r}
+NYweath_temp %>% 
+  ggplot(aes(x = DATE, y = TMIN)) +
+    geom_point() +
+    ggtitle("Minimum Daily Temperature in Central Park")
+```
+What a mess! Wait, of course this will look like a mess, because temperature oscillates with the seasons! Let's make sure this oscillation is present in the data by looking at just a 2-year window of minimum daily remperatures from 2018 to the present.
+
+``` {r}
+Recent_weath <- subset(NYweath_temp, year > 2017) 
+Recent_weath %>% 
+  ggplot(aes(x = DATE, y = TMIN)) +
+    geom_point() +
+    ggtitle("Minimum Daily Temperature in Central Park")
+```
+
+How reassuring! Now, let's look at the maximum daily temperatures.
+
+
+``` {r}
+Recent_weath <- subset(NYweath_temp, year > 2017) 
+Recent_weath %>% 
+  ggplot(aes(x = DATE, y = TMAX)) +
+    geom_point() +
+    ggtitle("Maximum Daily Temperature in Central Park")
+```
+
+Cool. We could fit these data to sine curves to determine the amplitudes or center points of oscillation along with confidence intervals, and compare them to the results for way earlier in the 20th or 19th centuries, to see if there are statistical differences in the curve fit parameters across the 100-year window.
+
+What about trends in daily temperature range (daily high minus daily low)? 
+
+``` {r}
+Recent_weath$rang <- (Recent_weath$TMAX - Recent_weath$TMIN)
+
+Recent_weath %>% 
+  ggplot(aes(x = DATE, y = rang)) +
+  geom_point() + 
+  labs(
+    title = "Daily Temperature Range in Central Park",
+    x = "Date",
+    y = "Daily high minus low temp")
+    
+```
+
+Interesting... I do see a trend here too: the greatest daily variation in temperature in Central Park appears to occur in later winter/early spring. We could compute the average daily temperature variation for each month, perhaps over the 100 year interval, to see if some months have statistically higher daily temperature variations.
+
+Now, for long-term trends, let's look at Just the month of June.
+
+
+```{r }
+#creating a subset of the weather data that are just for June
+NYweath_temp_June <- subset(NYweath_temp, month == "06")
+
+#setting up a for loop to compute avg June Daily Low Temp
+ans = NULL
+ans2 = NULL
+for (n in 1869:2022) {
+    ans <- mean(NYweath_temp_June[NYweath_temp_June$year == n, 'TMIN'], na.rm=TRUE)
+    ans2 <- c(ans2, ans)
+}
+
+#Creating new data frame containing only the data we want to plot
+NYmintemp_June <- data.frame(year = c(1869:2022), TMIN_avg = ans2)
+
+#plotting the average daily low temperature in June from 1869 - 2022
+NYmintemp_June %>% 
+  ggplot(aes(x = year, y = TMIN_avg)) +
+    geom_point() +
+    ggtitle("June Average Daily Min Temp in Central Park")
+
+```
+There does seem to be maybe a trend... but if so it is subtle... could attempt a linear fit and compute regression statistics. Could also do hypothesis testing on whether the avg June high temps from 1900-1910 are significantly distinct from those from 2000 to 2010. Would be very interesting to see trends also from a weather station in a more urban (concrete + steel) part of NYC.
+
+
+```{r}
+#setting up a for loop to compute avg June Daily High Temp
+ansh = NULL
+ansh2 = NULL
+for (n in 1869:2022) {
+    ansh <- mean(NYweath_temp_June[NYweath_temp_June$year == n, 'TMAX'], na.rm=TRUE)
+    ansh2 <- c(ansh2, ansh)
+}
+
+NYmaxtemp_June <- data.frame(year = c(1869:2022), TMAX_avg = ansh2)
+
+NYmaxtemp_June %>% 
+  ggplot(aes(x = year, y = TMAX_avg)) +
+    geom_point() +
+    ggtitle("June Average Daily Max Temp in Central Park")
+
+```
+
+Also seems like a slightly positive trend. Would be interesting to fit this to a linear model and look at slope & regression statistics, and to compare avg values for a cluster of years in the 1900s v. the 2000s.
