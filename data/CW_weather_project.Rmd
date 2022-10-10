@@ -1,0 +1,52 @@
+---
+title: "CW_NYC_weather_EDA"
+author: "Chris W"
+date: "2022-10-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r }
+
+weather_data <- data.frame(read.csv("NYC_weather_1869_2022.csv"))
+
+head(weather_data, 5)
+
+```
+
+```{r }
+
+weather_data$DATE <- as.Date(weather_data$DATE)
+
+weather_data$YEAR <- format(weather_data$DATE, "%Y")
+weather_data$MONTH<- format(weather_data$DATE, "%m")
+weather_data$DAY <- format(weather_data$DATE, "%d")
+
+head(weather_data, 5)
+
+```
+
+```{r }
+
+weather_100yr <- subset(weather_data, weather_data$YEAR > 1899)
+
+month_avg <- aggregate(TMAX ~ MONTH + YEAR, weather_100yr, mean)
+month_avg$date <- paste("01",month_avg$MONTH, month_avg$YEAR, sep = "/")
+month_avg$date <- as.Date(month_avg$date,"%d/%m/%Y")
+View(month_avg)
+library(ggplot2)
+
+scatter <- ggplot(month_avg, aes(x = date, y = TMAX, col = YEAR)) +
+  geom_point()
+scatter
+
+```
