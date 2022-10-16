@@ -1,0 +1,107 @@
+---
+title: "CW_project1"
+author: "Chris W"
+date: "2022-10-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+## Importing Weather Data
+```{r }
+
+weather_data <- data.frame(read.csv("NYC_weather_1869_2022.csv"))
+
+#head(weather_data, 5)
+
+```
+
+## Separating Date into Day/Mont/Year columns
+
+```{r}
+
+weather_data$DATE <- as.Date(weather_data$DATE)
+
+weather_data$YEAR <- format(weather_data$DATE, "%Y")
+weather_data$MONTH<- format(weather_data$DATE, "%m")
+weather_data$DAY <- format(weather_data$DATE, "%d")
+
+#head(weather_data, 5)
+
+```
+
+
+
+## Subsetting Data and Finding Monthly Averages for Temp, Precip, and Snowfall
+
+``` {r}
+
+weather_100yr <- subset(weather_data, weather_data$YEAR > 1899)
+
+month_tmax_avg <- aggregate(TMAX ~ MONTH + YEAR, weather_100yr, mean)
+month_tmin_avg <- aggregate(TMIN ~ MONTH + YEAR, weather_100yr, mean)
+month_precip_avg <- aggregate(PRCP ~ MONTH + YEAR, weather_100yr, mean)
+month_snow_avg <- aggregate(SNOW ~ MONTH + YEAR, weather_100yr, mean)
+#month_tmax_avg$date <- paste("01",month_avg$MONTH, month_avg$YEAR, sep = "/")
+#month_tmax_avg$date <- as.Date(month_avg$date,"%d/%m/%Y")
+
+month_avg <- data.frame(month_tmax_avg, month_tmin_avg$TMIN,
+                        month_precip_avg$PRCP, month_snow_avg$SNOW)
+colnames(month_avg)[4:6] <- c("TMIN", "PRCP", "SNOW")
+
+```
+
+
+## Plotting the Data
+```{r}
+
+seasonal_tmax <- subset(month_avg, MONTH == "03" |
+                          MONTH == "06" | 
+                          MONTH == "09" | 
+                          MONTH == "12")
+
+library(ggplot2)
+tmax_scatter <- ggplot(seasonal_tmax, aes(x = YEAR, y = TMAX, col = MONTH)) +
+ geom_point()
+tmax_scatter
+
+```
+
+## Question 1:
+Are there statistically measurable changes in weather patterns (e.g., temperature and precipitation levels) over time in New York City over this window?
+
+- Separate into seasons
+- Compare seasonal temps from early 1900 to recent temps?
+- What statistical test?
+- Does this require a linear model?
+```{r}
+june_tmax <- subset(month_avg, MONTH == "06")
+lm(formula = TMAX ~ YEAR, data = june_tmax)
+
+```
+
+
+## Question 2:
+Are there any notable (and statistically significant) changes in weather patterns after/during the pandemic lockdown (perhaps due to changes in commuting patterns)?
+
+- Compare 10 years prior to 2020 to 2 years after?
+- Chi-square test or 2-sample t-test?
+
+
+
+
+## Question 3:
+Do the observed changes in the weather data from New York City align with the documented rise in global air temperatures over the last century?
+
+- Compare rate of change observed in NYC to the global rate
+- What stat test? 
+- Earth’s temperature has risen by 0.14° Fahrenheit (0.08° Celsius) per decade since 1880, but the rate of warming since 1981 is more than twice that: 0.32° F (0.18° C) per decade. (per climate.gov)
+
