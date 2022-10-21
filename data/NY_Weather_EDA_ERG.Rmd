@@ -152,3 +152,57 @@ NYmaxtemp_June %>%
 ```
 
 Also seems like a slightly positive trend. Would be interesting to fit this to a linear model and look at slope & regression statistics, and to compare avg values for a cluster of years in the 1900s v. the 2000s.
+
+##Modeling
+Let's look at linear regression of these data.
+
+```{r}
+linfit_max <- lm(NYmaxtemp_June$TMAX_avg ~ NYmaxtemp_June$year)
+summary(linfit_max)
+
+```
+```{r}
+linfit_min <- lm(NYmintemp_June$TMIN_avg ~ NYmintemp_June$year)
+summary(linfit_min)
+
+```
+
+Wow! I was wrong! R-squared is very small!! Of course, I was not paying attention to the vertical axis scale.  On the other hand, per the F tests, we cannot reject the null model, meaning that there is a significant slope... Would also be interesting to look at residuals.  
+
+I wonder if we'll get something different if we look 
+
+I also wonder whether 
+
+##Playing with JFK weather
+
+```{r, results="asis"}
+#loading packages and data 
+
+JFKweath <- data.frame(read.csv("JFK_weather_1949-2022.csv"))
+xkablesummary(NYweath)
+#str(NYweath)                      
+#cablehead(NYweath, n=5)
+#tail(NYweath, n=2)
+
+```
+
+```{r, r = "as is"}
+#converting to R date format and adding columns for day, month, and year
+library(stringr)
+
+str_replace_all(JFKweath, "/", "-")
+
+JFKweath$DATE <- as.Date(JFKweath$DATE)
+JFKweath$day <- format(JFKweath$DATE, format="%d")
+JFKweath$month <- format(JFKweath$DATE, format="%m")
+JFKweath$year <- format(JFKweath$DATE, format="%Y")
+
+#converting temperature observations to numerics
+JFKweath$TMAX <- as.numeric(JFKweath$TMAX)
+JFKweath$TMIN <- as.numeric(JFKweath$TMIN)
+JFKweath$TAVG <- as.numeric(JFKweath$TAVG)
+
+#creating a subset of the weather data that are only date- and temperature-related
+JFKweath_temp <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG)) 
+xkablesummary(JFKweath_temp)
+```
