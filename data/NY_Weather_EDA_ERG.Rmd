@@ -13,8 +13,8 @@ output:
   pdf_document:
     toc: yes
     toc_depth: '3'
-
 ---
+
 ```{r init, include=FALSE}
 knitr::opts_chunk$set(warning = F, results = "hide", message = F)
 options(scientific=T, digits = 3) 
@@ -23,7 +23,6 @@ library(ggplot2)
 library(ezids)
 library(dplyr)
 ```
-
 
 ##EDA with NYC Weather Data
 
@@ -49,25 +48,39 @@ NYweath$year <- format(NYweath$DATE, format="%Y")
 NYweath$TMAX <- as.numeric(NYweath$TMAX)
 NYweath$TMIN <- as.numeric(NYweath$TMIN)
 NYweath$TAVG <- as.numeric(NYweath$TAVG)
+NYweath$year <- as.numeric(NYweath$year)
+
+#Making month a factor
+NYweath$month <- as.factor(NYweath$month)
 
 #creating a subset of the weather data that are only date- and temperature-related
-NYweath_temp <- subset(NYweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG)) 
+NYweath_temp <- subset(NYweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
 xkablesummary(NYweath_temp)
 ```
 
 ## First attempt to visualize temperature trends
+
 Let's try to plot the max temp recorded each day in Central Park over time.
 
-``` {r}
+```{r}
+NYweath_temp %>% 
+  ggplot(aes(x = DATE, y = TMAX)) +
+    geom_point() +
+    ggtitle("Minimum Daily Temperature in Central Park")
+```
+
+And the minimum.
+
+```{r}
 NYweath_temp %>% 
   ggplot(aes(x = DATE, y = TMIN)) +
     geom_point() +
     ggtitle("Minimum Daily Temperature in Central Park")
 ```
 
-What a mess! Wait, of course this will look like a mess, because temperature oscillates with the seasons! Let's make sure this oscillation is present in the data by looking at just a 2-year window of minimum daily remperatures from 2018 to the present.
+What a mess! Wait, of course this will look like a mess, because temperature oscillates with the seasons! Let's make sure this oscillation is present in the data by looking at just a 2-year window of minimum daily temperatures from 2018 to the present.
 
-``` {r}
+```{r}
 Recent_weath <- subset(NYweath_temp, year > 2017) 
 Recent_weath %>% 
   ggplot(aes(x = DATE, y = TMIN)) +
@@ -77,8 +90,7 @@ Recent_weath %>%
 
 How reassuring! Now, let's look at the maximum daily temperatures.
 
-
-``` {r}
+```{r}
 Recent_weath <- subset(NYweath_temp, year > 2017) 
 Recent_weath %>% 
   ggplot(aes(x = DATE, y = TMAX)) +
@@ -88,9 +100,9 @@ Recent_weath %>%
 
 Cool. We could fit these data to sine curves to determine the amplitudes or center points of oscillation along with confidence intervals, and compare them to the results for way earlier in the 20th or 19th centuries, to see if there are statistical differences in the curve fit parameters across the 100-year window.
 
-What about trends in daily temperature range (daily high minus daily low)? 
+What about trends in daily temperature range (daily high minus daily low)?
 
-``` {r}
+```{r}
 Recent_weath$rang <- (Recent_weath$TMAX - Recent_weath$TMIN)
 
 Recent_weath %>% 
@@ -106,7 +118,6 @@ Recent_weath %>%
 Interesting... I do see a trend here too: the greatest daily variation in temperature in Central Park appears to occur in later winter/early spring. We could compute the average daily temperature variation for each month, perhaps over the 100 year interval, to see if some months have statistically higher daily temperature variations.
 
 Now, for long-term trends, let's look at Just the month of June.
-
 
 ```{r }
 #creating a subset of the weather data that are just for June
@@ -130,8 +141,8 @@ NYmintemp_June %>%
     ggtitle("June Average Daily Min Temp in Central Park")
 
 ```
-There does seem to be maybe a trend... but if so it is subtle... could attempt a linear fit and compute regression statistics. Could also do hypothesis testing on whether the avg June high temps from 1900-1910 are significantly distinct from those from 2000 to 2010. Would be very interesting to see trends also from a weather station in a more urban (concrete + steel) part of NYC.
 
+There does seem to be maybe a trend... but if so it is subtle... could attempt a linear fit and compute regression statistics. Could also do hypothesis testing on whether the avg June high temps from 1900-1910 are significantly distinct from those from 2000 to 2010. Would be very interesting to see trends also from a weather station in a more urban (concrete + steel) part of NYC.
 
 ```{r}
 #setting up a for loop to compute avg June Daily High Temp
@@ -153,56 +164,71 @@ NYmaxtemp_June %>%
 
 Also seems like a slightly positive trend. Would be interesting to fit this to a linear model and look at slope & regression statistics, and to compare avg values for a cluster of years in the 1900s v. the 2000s.
 
-##Modeling
-Let's look at linear regression of these data.
+##Modeling:  
+
+Let's look at linear regression of these data.  
+
 
 ```{r}
 linfit_max <- lm(NYmaxtemp_June$TMAX_avg ~ NYmaxtemp_June$year)
 summary(linfit_max)
 
 ```
+
+Wow! I was wrong! R-squared is very small!! Of course, I was not paying attention to the vertical axis scale. On the other hand, per the F tests, we cannot reject the null model, meaning that there is a significant slope... Would also be interesting to look at residuals.  
+
+## Multiple linear regression with month as a categorical variable  
+
+Trying a fit on TMAX for all data-- rather than monthly averages for June-- using month as a factor variable.  
+
 ```{r}
-linfit_min <- lm(NYmintemp_June$TMIN_avg ~ NYmintemp_June$year)
-summary(linfit_min)
+maxTfit1 <- lm(formula = TMAX ~ year + month, data = NYweath_temp )
+summary(maxTfit1)
 
 ```
 
-Wow! I was wrong! R-squared is very small!! Of course, I was not paying attention to the vertical axis scale.  On the other hand, per the F tests, we cannot reject the null model, meaning that there is a significant slope... Would also be interesting to look at residuals.  
+The multiple r-squared (and adjusted r-squared) fits are much better here, at 0.775. This may simply be because there are many more data points than when using monthly averages. So-- that full mess of data was all useful!  
 
-I wonder if we'll get something different if we look 
+Here are the equations:  
 
-I also wonder whether 
+January: -23.3 + 0.0316 `year`  
+February: -23.3+ 1.38 + 0.0316 `year`  
+March: -23.3 + 9.55 + 0.0316 `year`  
+April: -23.3 + 21.2 + 0.0316 `year`  
+May: -23.3 + 32.3 + 0.0316 `year`  
+June: -23.3 + 41.1 + 0.0316 `year`  
+July: -23.3 + 46.1 + 0.0316 `year`  
+August: -23.3 + 44.1 + 0.0316 `year`  
+September: -23.3 + 37.4 + 0.0316 `year`  
+October: -23.3 + 26.2 + 0.0316 `year`  
+November: -23.3 + 14.1 + 0.0316 `year`  
+December: -23.3 + 3.71 + 0.0316 `year`  
 
-##Playing with JFK weather
 
-```{r, results="asis"}
-#loading packages and data 
+On average, maximum daily temperatures in this location in central park have been increasing by 0.0316 degrees Fahrenheit per year over the time frame of the data set (1869 to 2022).
 
-JFKweath <- data.frame(read.csv("JFK_weather_1949-2022.csv"))
-xkablesummary(NYweath)
-#str(NYweath)                      
-#cablehead(NYweath, n=5)
-#tail(NYweath, n=2)
+```{r}
+maxTfit2 <- lm(formula = TMAX ~ year*month, data = NYweath_temp )
+summary(maxTfit2)
 
 ```
+The equations, including interaction terms, are:
 
-```{r, r = "as is"}
-#converting to R date format and adding columns for day, month, and year
-library(stringr)
+January: -XX + 0.01814 `year`  
+February: -48.49 + (0.02563 + 0.01814) `year`  
+March: -60.35 + 9.55 + (0.03592 + 0.01814) `year`  
+April: -37.07 + 21.2 + (0.02993 + 0.01814) `year`  
+May: 19.85 + 32.3 + (0.00641 + 0.01814) `year`  
+June: 47.84 + 41.1 + (0.02563 + 0.01814) `year`  
+July: -39.37 + 46.1 + (0.0328 + 0.01814) `year`  
+August: 22.69 + 44.1 + (0.01103 + 0.01814) `year`  
+September: 26.84 + 37.4 + (0.00541 + 0.01814) `year`  
+October: 16.26 + 26.2 + (0.00511 + 0.01814) `year`  
+November: -31.07 + 14.1 + (0.02330 + 0.01814) `year`  
+December: -36.39 + 3.71 + (0.02061 + 0.01814) `year`  
 
-str_replace_all(JFKweath, "/", "-")
 
-JFKweath$DATE <- as.Date(JFKweath$DATE)
-JFKweath$day <- format(JFKweath$DATE, format="%d")
-JFKweath$month <- format(JFKweath$DATE, format="%m")
-JFKweath$year <- format(JFKweath$DATE, format="%Y")
+Essentially the same r-squared here. The interaction terms are significant for February, March, April, August, November, and December, meaning that the change in temperature over time is likely different for these months. The warming is greatest in February, March, April, November, and December.
 
-#converting temperature observations to numerics
-JFKweath$TMAX <- as.numeric(JFKweath$TMAX)
-JFKweath$TMIN <- as.numeric(JFKweath$TMIN)
-JFKweath$TAVG <- as.numeric(JFKweath$TAVG)
+I wonder if we'll get something different if we look at weather in a more built environment. Starting a new RMD file for this.  
 
-#creating a subset of the weather data that are only date- and temperature-related
-JFKweath_temp <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG)) 
-xkablesummary(JFKweath_temp)
-```
