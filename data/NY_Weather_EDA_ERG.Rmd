@@ -212,23 +212,23 @@ maxTfit2 <- lm(formula = TMAX ~ year*month, data = NYweath_temp )
 summary(maxTfit2)
 
 ```
-The equations, including interaction terms, are:
+The equations, including interaction terms, are:  
 
-January: -XX + 0.01814 `year`  
-February: -48.49 + (0.02563 + 0.01814) `year`  
-March: -60.35 + 9.55 + (0.03592 + 0.01814) `year`  
-April: -37.07 + 21.2 + (0.02993 + 0.01814) `year`  
-May: 19.85 + 32.3 + (0.00641 + 0.01814) `year`  
-June: 47.84 + 41.1 + (0.02563 + 0.01814) `year`  
-July: -39.37 + 46.1 + (0.0328 + 0.01814) `year`  
-August: 22.69 + 44.1 + (0.01103 + 0.01814) `year`  
-September: 26.84 + 37.4 + (0.00541 + 0.01814) `year`  
-October: 16.26 + 26.2 + (0.00511 + 0.01814) `year`  
-November: -31.07 + 14.1 + (0.02330 + 0.01814) `year`  
-December: -36.39 + 3.71 + (0.02061 + 0.01814) `year`  
+January: -2.998 + 0.01814 `year`  
+February: -48.49 + -2.998 (0.02563 + 0.01814) `year`  
+March: -60.35 + -2.998 + (0.03592 + 0.01814) `year`  
+April: -37.07 + -2.998 + (0.02993 + 0.01814) `year`  
+May: 19.85 + -2.998 + (0.00641 + 0.01814) `year`  
+June: 47.84 + -2.998 + (0.02563 + 0.01814) `year`  
+July: 39.37 + -2.998 + (0.0328 + 0.01814) `year`  
+August: 22.69 + -2.998 + (0.01103 + 0.01814) `year`  
+September: 26.84 + -2.998 + (0.00541 + 0.01814) `year`  
+October: 16.26 + -2.998 + (0.00511 + 0.01814) `year`  
+November: -31.07 + -2.998 + (0.02330 + 0.01814) `year`  
+December: -36.39 + -2.998 + (0.02061 + 0.01814) `year`  
 
 
 Essentially the same r-squared here. The interaction terms are significant for February, March, April, August, November, and December, meaning that the change in temperature over time is likely different for these months. The warming is greatest in February, March, April, November, and December.
 
-I wonder if we'll get something different if we look at weather in a more built environment. Starting a new RMD file for this.  
+I wonder if we'll get something different if we look at weather in a more built environment. Starting a new RMD file for this.
 
