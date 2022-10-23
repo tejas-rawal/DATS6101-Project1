@@ -28,7 +28,7 @@ options(scientific=T, digits = 3)
 # NYC Weather Data: Temperature analysis
 
 ```{r load data}
-nyc_weather <- tibble(read.csv("NYC_weather_1869_2022.csv")) %>%
+nyc_weather <- tibble(read.csv("../data/NYC_weather_1869_2022.csv")) %>%
   dplyr::select(TMAX, TMIN, DATE, PRCP, SNOW)
 # view structure
 str(nyc_weather)
@@ -64,14 +64,15 @@ ggplot(nyc_weather) +
   scale_fill_manual(name="Column", values=c(TMAX="red",TMIN="blue"))
 
 nyc_weather %>%
-  ggplot(aes(x=MONTH, y=TMAX, fill=MONTH)) +
-  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
-  labs(title="TMAX by Month", x="Month", y="Temperature (°F)")
+  ggplot(aes(y=TMAX)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black", fill="red") +
+  labs(title="TMAX Boxplot", y="Temperature (°F)")
 
 nyc_weather %>%
-  ggplot(aes(x=MONTH, y=TMIN, fill=MONTH)) +
-  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
-  labs(title="TMIN by Month", x="Month", y="Temperature (°F)")
+  ggplot(aes(y=TMIN)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black", fill="steelblue") +
+  labs(title="TMIN Boxplot", x="", y="Temperature (°F)")
+
 
 qqnorm(nyc_weather$TMAX,
        main="QQ Plot TMAX",
@@ -137,7 +138,7 @@ For this analysis, I sought to subset the data into 30-50 year periods as such:
 ### 1900-1940
 #### Temperature and Precipitation Boxplots
 ```{r}
-# filter weather data for years 1890-1930
+# filter weather data for years 1900-1940
 industrial_era <- nyc_weather %>%
   dplyr::select(-MONTH) %>%
   filter(year(DATE) >= 1900, year(DATE) < 1940)
@@ -159,20 +160,21 @@ industrial_era %>%
 industrial_era %>%
   dplyr::select(PRCP, SNOW, DATE) %>%
   gather(key="data_point", value="value", PRCP, SNOW) %>%
+  filter(value > 0.0) %>%
   ggplot(aes(y=value, fill=data_point)) +
   geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
   labs(title="Distribution of PRCP and SNOW for Years 1900-1940", x="Data Point", y="Amount (inches)")
 
 ```
 
-### 1930-1980
+### 1940-1980
 #### Temperature and Precipitation Boxplots
 ```{r temperature analysis}
 coldwar_era <- nyc_weather %>%
   dplyr::select(-MONTH) %>%
   filter(year(DATE) >= 1940, year(DATE) < 1980)
 
-str(war_era)
+str(coldwar_era)
 
 coldwar_era %>%
   ggplot() +
@@ -189,6 +191,7 @@ coldwar_era %>%
 coldwar_era %>%
   dplyr::select(PRCP, SNOW, DATE) %>%
   gather(key="data_point", value="value", PRCP, SNOW) %>%
+  filter(value > 0.0) %>%
   ggplot(aes(y=value, fill=data_point)) +
   geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
   labs(title="Distribution of PRCP and SNOW for Years 1940-1980", x="Data Point", y="Amount (inches)")
@@ -200,8 +203,7 @@ coldwar_era %>%
 ```{r}
 modern_era <- nyc_weather %>%
   dplyr::select(-MONTH) %>%
-  filter(year(DATE) >= 1980) %>%
-  mutate(ERA = "Modern")
+  filter(year(DATE) >= 1980)
 
 str(modern_era)
 
@@ -220,6 +222,7 @@ modern_era %>%
 modern_era %>%
   dplyr::select(PRCP, SNOW, DATE) %>%
   gather(key="data_point", value="value", PRCP, SNOW) %>%
+  filter(value > 0.0) %>%
   ggplot(aes(y=value, fill=data_point)) +
   geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
   labs(title="Distribution of PRCP and SNOW for Years 1980-Present", x="Data Point", y="Amount (inches)")
@@ -244,8 +247,110 @@ $H_1:$ The average `TMAX` across the three eras is different.
 $\alpha$: `0.05`
 
 ```{r}
-# combined data set
+# modify data set by adding ERA column
+industrial_era <- industrial_era %>%
+  mutate(ERA = 1)
+coldwar_era <- coldwar_era %>%
+  mutate(ERA = 2)
+modern_era <- modern_era %>%
+  mutate(ERA = 3)
+# combine data frames
+all_eras = rbind(industrial_era, coldwar_era, modern_era)
+# convert ERA column to factor/categorical
+all_eras$ERA = factor(all_eras$ERA, labels = c("Indst.", "Cold War", "Modern"))
+# run ANOVA
+anova_res <- aov(TMAX ~ ERA, data = all_eras)
+summary(anova_res)
+xkabledply(anova_res)
+```
+With a p-value of `r pf(51, 2, 44826, lower.tail=F)`, we can safely assume that the average daily maximum temperature between the 3 eras is different.
+
+#### Tukey HSD
+
+This tests will analyze the difference between means of the 3 eras:  
+
+```{r}
+tukeyAoV <- TukeyHSD(anova_res)
+tukeyAoV
+plot(tukeyAoV)
+```
+### Outlier Check on Precipitation
+```{r}
+library(ggrepel)
+# extract PRCP outlier rows into df variable
+# remove zeros
+# group variable by decade, getting sum for each decade
+prcp_no_zeros <- nyc_weather %>%
+  filter(PRCP > 0.0 & !is.na(PRCP))
+prcp_boxplot <- boxplot(prcp_no_zeros$PRCP, ylab = "Temperature (°F)")
+
+prcp_outliers <- boxplot.stats(prcp_no_zeros$PRCP)$out
+prcp_outliers.index <- which(prcp_no_zeros$PRCP %in% c(prcp_outliers))
+prcp_outliers_df <- prcp_no_zeros[prcp_outliers.index, ]
+
+
+prcp_outliers_df.max <- prcp_outliers_df[which.max(prcp_outliers_df$PRCP), ]
+prcp_outliers_df.max
+
+prcp_outliers_df.yearly <- prcp_outliers_df %>%
+  mutate(YEAR = year(DATE)) %>%
+  group_by(YEAR) %>%
+  summarize(prcp_total = sum(PRCP, na.rm=T))
+
+# yearly plot. try scatter and line
+# show top 5 years
+top_5_years.prcp <- prcp_outliers_df.yearly %>%
+  slice_max(order_by = prcp_total, n = 5)
+
+prcp_outliers_df.yearly %>%
+  ggplot(aes(x=YEAR, y=prcp_total)) +
+    geom_line(na.rm=TRUE, alpha=0.7, color="darkgreen") +
+    geom_point(na.rm = TRUE, fill="#69b3a2", shape = 21) +
+    geom_text_repel(aes(label=YEAR), data=top_5_years.prcp) +
+    labs(x="Year", y="Total Yearly Amount (inches)") +
+    scale_fill_brewer(palette="Spectral")
+
+# group into decades and create bar plot
+prcp_outliers_df.decades <- prcp_outliers_df %>%
+  mutate(decade = paste(floor(year(DATE) / 10) * 10, "s", sep="")) %>%
+  group_by(decade) %>%
+  summarise(prcp_total = sum(PRCP, na.rm=T))
+
+prcp_outliers_df.decades %>%
+  ggplot(aes(x=decade, y=prcp_total)) +
+    geom_col(na.rm=TRUE, alpha=0.7, color="black", fill="#56B4E9", position="identity") +
+    labs(x="Decade", y="Total Amount (inches)")
+
 
 ```
 
-### Temperature vs Rain amount 2D Density plot
+### Christmas Snow
+```{r}
+# sum snowfall from 24-25th Dec
+nyc_weather.christmas_snow <- nyc_weather %>%
+  filter(month(DATE) == 12 & (day(DATE) == 24 | day(DATE) == 25)) %>%
+  mutate(YEAR = year(DATE)) %>%
+  group_by(YEAR) %>%
+  summarise(snowfall = sum(SNOW, na.rm = T))
+
+# how many years has there been snow?
+with_snow <- nyc_weather.christmas_snow %>%
+  filter(snowfall > 0.0)
+
+# highest snowfall year?
+largest_snowfall <- nyc_weather.christmas_snow[which.max(nyc_weather.christmas_snow$snowfall), ]
+
+# yearly plot for years it snowed
+top_5_years.snowfall <- with_snow %>%
+  slice_max(order_by = snowfall, n = 5)
+
+with_snow %>%
+  ggplot(aes(x=YEAR, y=snowfall)) +
+    geom_line(na.rm=TRUE, alpha=0.7, color="steelblue") +
+    geom_point(na.rm = TRUE, fill="#00edfa", shape = 21) +
+    geom_label_repel(aes(label=YEAR), data=with_snow) +
+    labs(title="Total Snowfall on Christmas/Christmas Eve By Year",  x="Year", y="Snowfall (inches)")
+```
+
+It has snowed on `r nrow(with_snow)` out of `r 2021-1869` Christmases.  
+The largest snowfall recorded on Christmas/Christmas Eve was in `r largest_snowfall$YEAR` when it snowed `r largest_snowfall$snowfall` inches!!  
