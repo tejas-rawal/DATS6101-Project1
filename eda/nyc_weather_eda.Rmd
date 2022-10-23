@@ -48,7 +48,7 @@ xkablesummary(nyc_weather)
 Add a MONTH column to the dataset. The month is extracted from the DATE.
 ```{r}
 nyc_weather <- nyc_weather %>%
-  mutate(MONTH = month(DATE, label=T))
+  mutate(MONTH = lubridate::month(DATE, label=T))
 
 str(nyc_weather)
 # review dataset structure
@@ -90,7 +90,7 @@ qqline(nyc_weather$TMIN, lwd=1, lty=2)
 ```
 
 ### Average daily temperature max and min by month, all time
-```{r temperature analysis}
+```{r average daily temperature analysis}
 # group data by month
 # and calculate average
 nyc_weather_by_month <- nyc_weather %>%
@@ -141,7 +141,7 @@ For this analysis, I sought to subset the data into 30-50 year periods as such:
 # filter weather data for years 1900-1940
 industrial_era <- nyc_weather %>%
   dplyr::select(-MONTH) %>%
-  filter(year(DATE) >= 1900, year(DATE) < 1940)
+  filter(lubridate::year(DATE) >= 1900, lubridate::year(DATE) < 1940)
 
 str(industrial_era)
 
@@ -169,10 +169,10 @@ industrial_era %>%
 
 ### 1940-1980
 #### Temperature and Precipitation Boxplots
-```{r temperature analysis}
+```{r era-based temperature analysis}
 coldwar_era <- nyc_weather %>%
   dplyr::select(-MONTH) %>%
-  filter(year(DATE) >= 1940, year(DATE) < 1980)
+  filter(lubridate::year(DATE) >= 1940, lubridate::year(DATE) < 1980)
 
 str(coldwar_era)
 
@@ -203,7 +203,7 @@ coldwar_era %>%
 ```{r}
 modern_era <- nyc_weather %>%
   dplyr::select(-MONTH) %>%
-  filter(year(DATE) >= 1980)
+  filter(lubridate::year(DATE) >= 1980)
 
 str(modern_era)
 
@@ -293,7 +293,7 @@ prcp_outliers_df.max <- prcp_outliers_df[which.max(prcp_outliers_df$PRCP), ]
 prcp_outliers_df.max
 
 prcp_outliers_df.yearly <- prcp_outliers_df %>%
-  mutate(YEAR = year(DATE)) %>%
+  mutate(YEAR = lubridate::year(DATE)) %>%
   group_by(YEAR) %>%
   summarize(prcp_total = sum(PRCP, na.rm=T))
 
@@ -312,7 +312,7 @@ prcp_outliers_df.yearly %>%
 
 # group into decades and create bar plot
 prcp_outliers_df.decades <- prcp_outliers_df %>%
-  mutate(decade = paste(floor(year(DATE) / 10) * 10, "s", sep="")) %>%
+  mutate(decade = paste(floor(lubridate::year(DATE) / 10) * 10, "s", sep="")) %>%
   group_by(decade) %>%
   summarise(prcp_total = sum(PRCP, na.rm=T))
 
@@ -328,8 +328,8 @@ prcp_outliers_df.decades %>%
 ```{r}
 # sum snowfall from 24-25th Dec
 nyc_weather.christmas_snow <- nyc_weather %>%
-  filter(month(DATE) == 12 & (day(DATE) == 24 | day(DATE) == 25)) %>%
-  mutate(YEAR = year(DATE)) %>%
+  filter(lubridate::month(DATE) == 12, (lubridate::day(DATE) == 24 | lubridate::day(DATE) == 25)) %>%
+  mutate(YEAR = lubridate::year(DATE)) %>%
   group_by(YEAR) %>%
   summarise(snowfall = sum(SNOW, na.rm = T))
 
@@ -353,4 +353,5 @@ with_snow %>%
 ```
 
 It has snowed on `r nrow(with_snow)` out of `r 2021-1869` Christmases.  
+
 The largest snowfall recorded on Christmas/Christmas Eve was in `r largest_snowfall$YEAR` when it snowed `r largest_snowfall$snowfall` inches!!  
