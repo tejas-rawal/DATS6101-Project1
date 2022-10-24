@@ -1,0 +1,187 @@
+---
+title: "Project 1 EDA: NYC Weather Data Part II: JFK data"
+author: "Emily"
+date: "2022-10-01"
+# date: "today"
+output:
+  html_document:
+    code_folding: hide
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+```{r init, include=FALSE}
+knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+options(scientific=T, digits = 3) 
+
+library(ggplot2)
+library(ezids)
+library(dplyr)
+```
+
+##EDA with NYC Weather Data
+
+```{r, results="asis"}
+#loading packages and data 
+
+JFKweath <- data.frame(read.csv("JFK_weather_1949-2022.csv"))
+xkablesummary(JFKweath)
+#str(JFKweath)                      
+#cablehead(JFKweath, n=5)
+#tail(JFKweath, n=2)
+
+```
+
+```{r, r = "as is"}
+#converting to R date format and adding columns for day, month, and year
+JFKweath$DATE <- as.Date(JFKweath$DATE)
+JFKweath$day <- format(JFKweath$DATE, format="%d")
+JFKweath$month <- format(JFKweath$DATE, format="%m")
+JFKweath$year <- format(JFKweath$DATE, format="%Y")
+
+#converting temperature observations to numerics
+JFKweath$TMAX <- as.numeric(JFKweath$TMAX)
+JFKweath$TMIN <- as.numeric(JFKweath$TMIN)
+JFKweath$TAVG <- as.numeric(JFKweath$TAVG)
+JFKweath$year <- as.numeric(JFKweath$year)
+
+#Making month a factor
+NYweath$month <- as.factor(NYweath$month)
+
+#creating a subset of the weather data that are only date- and temperature-related
+JFKweath_sub <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
+xkablesummary(JFKweath_sub)
+```
+
+## First attempt to visualize temperature trends
+
+Let's try to plot the max temp recorded each day in Central Park over time.
+
+```{r}
+JFKweath_sub %>% 
+  ggplot(aes(x = DATE, y = TMAX)) +
+    geom_point() +
+    ggtitle("Maximum Daily Temperature at JFK airport")
+```
+
+And the minimum.
+
+```{r}
+JFKweath_sub %>% 
+  ggplot(aes(x = DATE, y = TMIN)) +
+    geom_point() +
+    ggtitle("Minimum Daily Temperature at JFK Airport")
+```
+
+What a mess! Wait, of course this will look like a mess, because temperature oscillates with the seasons! Let's make sure this oscillation is present in the data by looking at just a 2-year window of minimum daily temperatures from 2018 to the present.
+
+```{r}
+Recent_weath <- subset(JFKweath_sub, year > 2017) 
+Recent_weath %>% 
+  ggplot(aes(x = DATE, y = TMIN)) +
+    geom_point() +
+    ggtitle("Minimum Daily Temperature at JFK Airport")
+```
+
+How reassuring! Now, let's look at the maximum daily temperatures.
+
+```{r}
+Recent_JFKweath <- subset(JFKweath_sub, year > 2017) 
+Recent_JFKweath %>% 
+  ggplot(aes(x = DATE, y = TMAX)) +
+    geom_point() +
+    ggtitle("Maximum Daily Temperature at JFK Airport")
+```
+
+Cool. We could fit these data to sine curves to determine the amplitudes or center points of oscillation along with confidence intervals, and compare them to the results for way earlier in the 20th or 19th centuries, to see if there are statistical differences in the curve fit parameters across the 100-year window.
+
+What about trends in daily temperature range (daily high minus daily low)?
+
+```{r}
+Recent_JFKweath$rang <- (Recent_weath$TMAX - Recent_weath$TMIN)
+
+Recent_JFKweath %>% 
+  ggplot(aes(x = DATE, y = rang)) +
+  geom_point() + 
+  labs(
+    title = "Daily Temperature Range at JFK Airport",
+    x = "Date",
+    y = "Daily high minus low temp")
+    
+```
+
+Interesting... I do see a trend here too, but a lot is going on.
+
+
+## Linear regression with year as a variable  
+
+```{r}
+jmaxTfit1 <- lm(formula = TMAX ~ year, data = JFKweath_sub )
+summary(jmaxTfit1)
+
+```
+
+## Multiple linear regression with month as a categorical variable  
+
+Trying a fit on TMAX for all data using month as a factor variable.  
+
+```{r}
+jmaxTfit1 <- lm(formula = TMAX ~ year + month, data = JFKweath_sub )
+summary(jmaxTfit1)
+
+```
+
+The multiple r-squared (and adjusted r-squared) fits are much better here, at 0.795. This may simply be because there are many more data points than when using monthly averages.
+
+Here are the equations:  
+
+January: -28.21756 + 0.03380 `year`  
+February: -28.21756 + 2.02149 0.03380 `year`  
+March: -28.21756 + 9.32084 + 0.03380 `year`  
+April: -28.21756 + 19.76311 + 0.03380 `year`  
+May: -28.21756 + 29.41606 + 0.03380 `year`  
+June: -28.21756 + 38.83283 + 0.03380 `year`  
+July: -28.21756 + 44.45024 + 0.03380 `year`  
+August: -28.21756 + 43.24112+ 0.03380 `year`  
+September: -28.21756 + 36.60503 + 0.03380 `year`  
+October: -28.21756 + 26.04513 + 0.03380 `year`  
+November: -28.21756 + 15.05592 + 0.03380 `year`  
+December: -28.21756 + 4.75950 + 0.03380 `year`  
+
+
+On average, maximum daily temperatures in this location in central park have been increasing by 0.0316 degrees Fahrenheit per year over the time frame of the data set (1869 to 2022).
+
+```{r}
+jmaxTfit2 <- lm(formula = TMAX ~ year*month, data = JFKweath_sub )
+summary(jmaxTfit2)
+
+```
+The equations, including interaction terms, are:  
+
+January: -2.998 + 0.01814 `year`  
+February: -48.49 + -2.998 (0.02563 + 0.01814) `year`  
+March: -60.35 + -2.998 + (0.03592 + 0.01814) `year`  
+April: -37.07 + -2.998 + (0.02993 + 0.01814) `year`  
+May: 19.85 + -2.998 + (0.00641 + 0.01814) `year`  
+June: 47.84 + -2.998 + (0.02563 + 0.01814) `year`  
+July: 39.37 + -2.998 + (0.0328 + 0.01814) `year`  
+August: 22.69 + -2.998 + (0.01103 + 0.01814) `year`  
+September: 26.84 + -2.998 + (0.00541 + 0.01814) `year`  
+October: 16.26 + -2.998 + (0.00511 + 0.01814) `year`  
+November: -31.07 + -2.998 + (0.02330 + 0.01814) `year`  
+December: -36.39 + -2.998 + (0.02061 + 0.01814) `year`  
+
+
+Essentially the same r-squared here. The interaction terms are significant for February, March, April, August, November, and December, meaning that the change in temperature over time is likely different for these months. The warming is greatest in February, March, April, November, and December.
+
+```{r}
+JFKweath_sub %>% 
+  ggplot(aes(x = DATE, y = TMAX)) +
+    geom_point() +
+    ggtitle("Maximum Daily Temperature at JFK Airport")
+```
