@@ -15,7 +15,9 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-## Importing Weather Data
+# Exploratory Data Analysis
+
+#### Importing Weather Data
 ```{r }
 
 weather_data <- data.frame(read.csv("NYC_weather_1869_2022.csv"))
@@ -24,78 +26,343 @@ weather_data <- data.frame(read.csv("NYC_weather_1869_2022.csv"))
 
 ```
 
-## Separating Date into Day/Mont/Year columns
+#### Separating Date into Day/Mont/Year columns
 
 ```{r}
 
 weather_data$DATE <- as.Date(weather_data$DATE)
 
-weather_data$YEAR <- format(weather_data$DATE, "%Y")
-weather_data$MONTH<- format(weather_data$DATE, "%m")
+weather_data$YEAR <- as.numeric(format(weather_data$DATE, "%Y"))
+weather_data$MONTH<- as.factor(format(weather_data$DATE, "%m"))
 weather_data$DAY <- format(weather_data$DATE, "%d")
 
 #head(weather_data, 5)
 
 ```
 
+I broke out the date column into separate Day, Month, and Year columns. I did this to make the data easier to manipulate on a month or year level.
 
-
-## Subsetting Data and Finding Monthly Averages for Temp, Precip, and Snowfall
+#### Subsetting Data and Finding Monthly Averages for Temp, Precip, and Snowfall
 
 ``` {r}
 
-weather_100yr <- subset(weather_data, weather_data$YEAR > 1899)
+weather_100yr <- subset(weather_data, weather_data$YEAR > 1899 & weather_data$YEAR < 2022)
 
-month_tmax_avg <- aggregate(TMAX ~ MONTH + YEAR, weather_100yr, mean)
-month_tmin_avg <- aggregate(TMIN ~ MONTH + YEAR, weather_100yr, mean)
-month_precip_avg <- aggregate(PRCP ~ MONTH + YEAR, weather_100yr, mean)
-month_snow_avg <- aggregate(SNOW ~ MONTH + YEAR, weather_100yr, mean)
+month_tmax_avg <- aggregate(TMAX ~ MONTH + YEAR, weather_data, mean)
+month_tmin_avg <- aggregate(TMIN ~ MONTH + YEAR, weather_data, mean)
+
+month_precip_avg <- aggregate(PRCP ~ MONTH + YEAR, weather_data, mean)
+colnames(month_precip_avg)[3] <- "PRCP_AVG"
+
+month_precip_total <- aggregate(PRCP ~ MONTH + YEAR, weather_data, sum)
+colnames(month_precip_total)[3] <- "PRCP_TOT"
+
+month_snow_avg <- aggregate(SNOW ~ MONTH + YEAR, weather_data, mean)
+colnames(month_snow_avg)[3] <- "SNOW_AVG"
+
+month_snow_total <- aggregate(SNOW ~ MONTH + YEAR, weather_data, sum)
+colnames(month_snow_total)[3] <- "SNOT_TOT"
 #month_tmax_avg$date <- paste("01",month_avg$MONTH, month_avg$YEAR, sep = "/")
 #month_tmax_avg$date <- as.Date(month_avg$date,"%d/%m/%Y")
 
-month_avg <- data.frame(month_tmax_avg, month_tmin_avg$TMIN,
-                        month_precip_avg$PRCP, month_snow_avg$SNOW)
-colnames(month_avg)[4:6] <- c("TMIN", "PRCP", "SNOW")
+monthly_weather <- data.frame(month_tmax_avg, 
+                                             month_tmin_avg$TMIN,
+                                             month_precip_avg$PRCP_AVG,
+                                             month_precip_total$PRCP_TOT,
+                                             month_snow_avg$SNOW_AVG,
+                                             month_snow_total$SNOT_TOT)
+colnames(monthly_weather)[4:8] <- c("TMIN", "PRCP_AVG", "PRCP_TOT", "SNOW_AVG", "SNOW_TOT")
+
+monthly_weather_100yr <- subset(monthly_weather, monthly_weather$YEAR > 1899 & monthly_weather$YEAR < 2022)
+
+
+```
+
+Found the monthly average for TMAX, TMIN, PRCP, and SNOW for all months from 1900-2022. Additionally found the total monthly PRCP and SNOW for all months from 1900 - 2022. 
+
+#### Doing the same for Yearly Data
+
+``` {r}
+
+year_tmax_avg <- aggregate(TMAX ~ YEAR, weather_data, mean)
+year_tmin_avg <- aggregate(TMIN ~ YEAR, weather_data, mean)
+
+year_precip_avg <- aggregate(PRCP ~ YEAR, weather_data, mean)
+colnames(year_precip_avg)[2] <- "PRCP_AVG"
+
+year_precip_total <- aggregate(PRCP ~ YEAR, weather_data, sum)
+colnames(year_precip_total)[2] <- "PRCP_TOT"
+
+year_snow_avg <- aggregate(SNOW ~ YEAR, weather_data, mean)
+colnames(year_snow_avg)[2] <- "SNOW_AVG"
+
+year_snow_total <- aggregate(SNOW ~ YEAR, weather_data, sum)
+colnames(year_snow_total)[2] <- "SNOT_TOT"
+
+
+yearly_weather <- data.frame(year_tmax_avg, 
+                             year_tmin_avg$TMIN, 
+                             year_precip_avg$PRCP_AVG, 
+                             year_precip_total$PRCP_TOT, 
+                             year_snow_avg$SNOW_AVG, 
+                             year_snow_total$SNOT_TOT)
+colnames(yearly_weather)[3:7] <- c("TMIN", "PRCP_AVG", "PRCP_TOT", "SNOW_AVG", "SNOW_TOT")
+#month_avg <- data.frame(month_tmax_avg, month_tmin_avg$TMIN,
+#                        month_precip_avg$PRCP, month_snow_avg$SNOW)
+
+yearly_weather_100yr <- subset(yearly_weather, yearly_weather$YEAR > 1899 & yearly_weather$YEAR < 2022)
+
+library(reshape2)
+
+melt_year_data <- melt(yearly_weather_100yr, id.vars = "YEAR")
+
+```
+
+Found yearly averages for TMAX, TMIN, PRCP, and SNOW. Additionally found the yearly totals for PRCP and SNOW. 
+
+### Plotting the Data to Visual Monthly & Yearly Trends
+
+#### Yearly TMAX and TMIN
+```{r}
+library(ggplot2)
+
+yearly_tmax_scatter <- ggplot(yearly_weather_100yr, aes(x = YEAR, y = TMAX)) + 
+  geom_point(color = "coral2") +
+  labs(x = "Year", y = "Temperature (F)", title = "Yearly Average Maximum Temp")
+
+yearly_tmax_scatter
+
+yearly_tmin_scatter <- ggplot(yearly_weather_100yr, aes(x = YEAR, y = TMIN)) + 
+  geom_point(color = "cornflowerblue") +
+  labs(x = "Year", y = "Temperature (F)", title = "Yearly Average Minimum Temp")
+
+yearly_tmin_scatter
+
+#Combined Tmax - Tmin plot
+max_min_sub <- subset(melt_year_data, variable == "TMAX" | variable == "TMIN")
+
+yearly_max_min_scatter <- ggplot(max_min_sub, aes(x = YEAR, y = value, col = variable)) + 
+  geom_point() +
+  labs(x = "Year", y = "Temperature (F)", title = "Yearly Average Maximum and Minimum Daily Temperatures in Central Park, NYC, from 1900-2022")
+
+yearly_max_min_scatter
+
+#tmax_scatter <- ggplot(monthly_weather, aes(x = YEAR, y = TMAX, col = MONTH)) +
+#  geom_point() +
+#  labs(x = "Year", y = "Maximum Daily Temperature (˚F)", title = "Seasonal Max Temperatures in Central Park, NYC, Over Time") +
+#  scale_x_continuous(breaks = seq(1900, 2022, 10), minor_breaks = NULL)
+  #guides(x = guide_axis(angle = 90, n.dodge = 5))
+  
+#tmax_scatter
 
 ```
 
 
-## Plotting the Data
+#### Yearly PRCP and SNOW Plots
+```{r}
+yearly_prcp_scatter <- ggplot(yearly_weather_100yr, aes(x = YEAR, y = PRCP_TOT)) + 
+  geom_point(color = "darkorchid") +
+  labs(x = "Year", y = "Total Precipitation (in)", title = "Total Yearly Precipitation")      
+
+yearly_prcp_scatter
+
+yearly_snow_scatter <- ggplot(yearly_weather_100yr, aes(x = YEAR, y = SNOW_TOT)) + 
+  geom_point(color = "azure4") +
+  labs(x = "Year", y = "Total Snowfall (in)", title = "Total Yearly Snowfall")
+
+yearly_snow_scatter
+
+```
+
+The above code generates 5 plots. One each for TMAX, TMIN, PRCP, and SNOW. Then an additional plot that plots both TMAX and TMIN on the same graph. 
+
+
 ```{r}
 
-seasonal_tmax <- subset(month_avg, MONTH == "03" |
-                          MONTH == "06" | 
-                          MONTH == "09" | 
-                          MONTH == "12")
+library(gridExtra)
 
-library(ggplot2)
-tmax_scatter <- ggplot(seasonal_tmax, aes(x = YEAR, y = TMAX, col = MONTH)) +
- geom_point()
-tmax_scatter
+grid.arrange(yearly_tmax_scatter, yearly_tmin_scatter,
+             yearly_prcp_scatter, yearly_snow_scatter,
+             nrow = 2, 
+             top = "Weather Patterns in Central Park, NYC, from 1900-2021")
 
 ```
+
+The quad chart above visualizes the four key weather patterns pulled from this data set. **Top left chart**: Max Daily Temps over time. There appears to be a clear trend of increasing max temperature over time.
+**Top right chart**: Min daily temperatures over time. There appears to be a similar trend of increasing min temp over time, however the change is not as drastic as max temps.
+**Bottom left chart**: Total precipitation per year. There does not appear to be any clear trend, however there appears to be more variation over the past 50 years.
+**Bottom right chart**: Total snowfall per year. There does not appear to be any clear trend. Potentially interesting to see if any discernable difference in trend from yearly precipitation.
+
+
+# Statistical Analysis
 
 ## Question 1:
 Are there statistically measurable changes in weather patterns (e.g., temperature and precipitation levels) over time in New York City over this window?
 
-- Separate into seasons
-- Compare seasonal temps from early 1900 to recent temps?
 - What statistical test?
 - Does this require a linear model?
+
+
+
+Using a Linear Regression to estimate the linear trend and statistical significance over time.
+
+### TMAX
 ```{r}
-june_tmax <- subset(month_avg, MONTH == "06")
-lm(formula = TMAX ~ YEAR, data = june_tmax)
+#install.packages("gtsummary")
+
+lm_tmax_yr <- lm(TMAX ~ YEAR, data = yearly_weather_100yr)
+#lm_tmax_mtyr <- lm(TMAX ~ YEAR + MONTH, data = monthly_weather_100yr)
+#lm_tmax_day <- lm(TMAX ~ YEAR, data = weather_100yr)
+
+summary(lm_tmax_yr)
+#summary(lm_tmax_mtyr)
+#summary(lm_tmax_day)
+
+
+coef_tmax_yr <- c(coefficients(lm_tmax_yr), summary(lm_tmax_yr)$adj.r.squared)
+#coef_tmax_day <- c(coefficients(lm_tmax_day), summary(lm_tmax_day)$adj.r.squared)
+#coef_table <- cbind(coef_tmax_day, coef_tmax_yr)
+#coef_table
+
+#library(gtsummary)
+#library(tidyr)
+
+#tbl_regression(lm_tmax_day, exponentiate = TRUE)
+
+```
+
+The table above shows the slope and intercept of the TMAX linear model based on two different approaches.`coef_tmax_day` uses the raw daily TMAX for each year in the dataset while `coef_tmax_yr` uses the yearly tmax averages. 
+
+```{r}
+yr_tmax_scatter_line <- yearly_tmax_scatter+
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth",
+              color = "black",
+              show.legend = T)
+
+yr_tmax_scatter_line
+
+
+
+```
+
+The regression line added to the yearly TMAX scatterplot. The slope of the line is `r coef_tmax_yr[2]`. This implies the average daily maximum temperature is increasing by `r coef_tmax_yr[2]` degrees F per year, or by about `r coef_tmax_yr[2]*10` degrees F per decade.  
+
+
+```{r}
+
+#mt_tmax_scatter <- ggplot(monthly_weather_100yr, aes(x = YEAR, y = TMAX, col = MONTH)) + 
+ # geom_point() +
+#  labs(x = "Year", y = "Temperature (F)", title = "Yearly Average Maximum Temp")
+
+#mt_tmax_scatter
+
+#mt_tmax_scatter_line <- mt_tmax_scatter+
+ # stat_smooth(method = "lm",
+  #            formula = y ~ x + col,
+   #           geom = "smooth",
+    #          color = "black",
+     #         show.legend = T)
+
+#mt_tmax_scatter_line
+
+
+
+```
+
+### TMIN
+
+```{r}
+lm_tmin_yr <- lm(TMIN ~ YEAR, data = yearly_weather_100yr)
+lm_tmin_day <- lm(TMIN ~ YEAR, data = weather_100yr)
+summary(lm_tmin_day)
+summary(lm_tmin_yr)
+
+#coef_tmin_yr <- coefficients(lm_tmin_yr)
+#coef_tmin_day <- coefficients(lm_tmin_day)
+#coef_table_min <- cbind(coef_tmin_day, coef_tmin_yr)
+#coef_table_min
+
+```
+
+The table above shows the slope and intercept of the TMIN linear model based on two different approaches.`coef_tmin_day` uses the raw daily TMIN for each year in the dataset while `coef_tmin_yr` uses the yearly TMIN averages. 
+
+```{r}
+yr_tmin_scatter_line <- yearly_tmin_scatter +
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth",
+              color = "black",
+              show.legend = T)
+
+yr_tmin_scatter_line
 
 ```
 
 
-## Question 2:
-Are there any notable (and statistically significant) changes in weather patterns after/during the pandemic lockdown (perhaps due to changes in commuting patterns)?
+### PRCP
+```{r}
 
-- Compare 10 years prior to 2020 to 2 years after?
-- Chi-square test or 2-sample t-test?
+lm_prcp_yr <- lm(PRCP_TOT ~ YEAR, data = yearly_weather_100yr)
+#lm_prcp_month <- lm(PRCP_TOT ~ YEAR + MONTH, data = monthly_weather_100yr)
+#lm_prcp_avg <- lm(PRCP ~ YEAR, data = weather_100yr)
+
+#lm_prcp_day <- lm(PRCP ~ YEAR, data = weather_100yr)
+#summary(lm_prcp_month)
+summary(lm_prcp_yr)
+#summary(lm_prcp_avg)
+
+coef_prcp_yr <- c(coefficients(lm_prcp_yr), summary(lm_prcp_yr)$r.square)
+coef_prcp_yr
+#coef_prcp_day <- coefficients(lm_tmax_day)
+#coef_table_prcp <- cbind(coef_prcp_day, coef_prcp_yr)
+#coef_table_prcp
+
+```
+
+The table above shows the slope and intercept of the TMAX linear model based on two different approaches.`
+
+```{r}
+yr_prcp_scatter_line <- yearly_prcp_scatter+
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth",
+              color = "black",
+              show.legend = T) + 
+  labs(title = "Total Yearly Precipitation in Central Park, NYC, 1900-2021")
 
 
+yr_prcp_scatter_line
+
+```
+
+### SNOW
+```{r}
+
+lm_snow_yr <- lm(SNOW_TOT ~ YEAR, data = yearly_weather_100yr)
+summary(lm_snow_yr)
+
+coef_snow_yr <- coefficients(lm_snow_yr)
+coef_snow_yr
+
+```
+
+The table above shows the slope and intercept of the TMAX linear model based on two different approaches.`coef_tmax_day` uses the raw daily TMAX for each year in the dataset while `coef_tmax_yr` uses the yearly tmax averages. 
+
+```{r}
+yr_snow_scatter_line <- yearly_snow_scatter+
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth",
+              color = "black",
+              show.legend = T)+
+  labs(title = "Total Yearly Snowfall in Central Park, NYC, 1900-2021")
+
+
+yr_snow_scatter_line
+
+```
 
 
 ## Question 3:
@@ -104,4 +371,40 @@ Do the observed changes in the weather data from New York City align with the do
 - Compare rate of change observed in NYC to the global rate
 - What stat test? 
 - Earth’s temperature has risen by 0.14° Fahrenheit (0.08° Celsius) per decade since 1880, but the rate of warming since 1981 is more than twice that: 0.32° F (0.18° C) per decade. (per climate.gov)
+
+
+To compare the slope of TMAX from the NYC data set to the known global temp change, will look at confidence interval of the coefficients from the linear model.
+
+```{r}
+
+#confint_tmax <- confint(lm_tmax_yr)
+#as.table(confint_tmax)
+
+weather1880 <- subset(monthly_weather, monthly_weather$YEAR > 1879 & monthly_weather$YEAR < 2022)
+
+weather1981 <- subset(monthly_weather, monthly_weather$YEAR > 1980 & monthly_weather$YEAR < 2022)
+
+
+yr1981_scatter <- ggplot(weather1981, aes(x = YEAR, y = TMAX, col = MONTH)) + 
+  geom_point() +
+  labs(x = "Year", y = "Temperature (F)", title = "Yearly Average Maximum Temp")
+
+yr1981_scatter
+
+lm1880 <- lm(TMAX ~ YEAR + MONTH, data = weather1880)
+lm1981 <- lm(TMAX ~ YEAR + MONTH, data = weather1981)
+
+
+summary(lm1880)
+summary(lm1981)
+
+```
+
+
+
+## Question 2:
+Are there any notable (and statistically significant) changes in weather patterns after/during the pandemic lockdown (perhaps due to changes in commuting patterns)?
+
+- Compare 10 years prior to 2020 to 2 years after?
+- Chi-square test or 2-sample t-test?
 
