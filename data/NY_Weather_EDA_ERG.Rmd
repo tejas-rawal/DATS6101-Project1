@@ -195,7 +195,7 @@ xkabledplyhead(NYweath_00)
 
 
 ```{r}
-maxTfit00_0 <- lm(formula = TMAX ~ year, data = NYweath_tc )
+maxTfit00_0 <- lm(formula = TMAX ~ year, data = NYweath_00 )
 summary(maxTfit00_0)
 ```
 
@@ -203,7 +203,7 @@ summary(maxTfit00_0)
 ## Linear regression of TMAX ~ year + month from 1900 on.  
 
 ```{r}
-maxTfit00_1 <- lm(formula = TMAX ~ year + month, data = NYweath_tc )
+maxTfit00_1 <- lm(formula = TMAX ~ year + month, data = NYweath_00 )
 summary(maxTfit00_1)
 
 ```
@@ -211,10 +211,66 @@ summary(maxTfit00_1)
 ## Linear regression of TMAX ~ year*month from 1900 on.  
 
 ```{r}
-maxTfit00_2 <- lm(formula = TMAX ~ year*month, data = NYweath_tc )
+maxTfit00_2 <- lm(formula = TMAX ~ year*month, data = NYweath_00 )
 summary(maxTfit00_2)
 
 ```
+
+```{r}
+NYweath00_Jan <- filter(NYweath_00, month == "01")
+NYweath00_Feb <- filter(NYweath_00, month == "02")
+NYweath00_Mar <- filter(NYweath_00, month == "03")
+NYweath00_Apr <- filter(NYweath_00, month == "04")
+NYweath00_May <- filter(NYweath_00, month == "05")
+NYweath00_Jun <- filter(NYweath_00, month == "06")
+NYweath00_Jul <- filter(NYweath_00, month == "07")
+NYweath00_Aug <- filter(NYweath_00, month == "08")
+NYweath00_Sep <- filter(NYweath_00, month == "09")
+NYweath00_Oct <- filter(NYweath_00, month == "10")
+NYweath00_Nov <- filter(NYweath_00, month == "11")
+NYweath00_Dec <- filter(NYweath_00, month == "12")
+
+xkabledplyhead(NYweath48_Jan)
+```
+
+```{r}
+ggplot() + 
+    geom_point(data = NYweath_00, aes(x = DATE, y = TMAX, colour = month)) +
+  labs(
+        x = "Year",
+        y = "Maximum Daily Temperature",
+        title = "Maximum Daily Temperature in Central Park",
+        )
+
+```
+
+
+```{r}
+ggplot() + 
+    geom_point(data = NYweath00_Jan, aes(x = year, y = TMAX, colour = "January"), col = "red") +
+    geom_abline(aes(intercept = 10.92079, slope = 0.01406, colour = "January"), col = "red", size = 2) + 
+    geom_point(data = NYweath00_Jul, aes(x = year, y = TMAX, colour = "July"), colour = "blue") +
+    geom_abline(aes(intercept = 57.32767, slope = 0.01406, colour = "July"), col = "blue", size = 2, lab = "July") +
+#    geom_point(data = NYweath48_Apr, aes(x = year, y = TMAX), col = "orange") +
+#    geom_abline(aes(intercept = 33.57326, slope = 0.01406, col = "orange", lab = "April")) + 
+#    geom_point(data = NYweath48_Oct, aes(x = year, y = TMAX, col = "blue")) +
+#    geom_abline(aes(intercept = 37.41768, slope = 0.01406, col = "blue", lab = "October")) +
+    coord_cartesian(xlim = c(1900, 2022), ylim = c(0, 120)) + 
+    ggtitle("Maximum Daily Temperature in Central Park") + 
+    scale_colour_manual(name="Line Color",
+      values=c(January="blue", July="green"))
+    labs(
+        x = "Year",
+        y = "Maximum Daily Temperature",
+        title = "Maximum Daily Temperature in Central Park",
+        )
+
+```
+
+The equations are: 
+
+
+
 
 ## Subsetting from 1948 on  
 
@@ -266,22 +322,27 @@ summary(maxTfit48_2)
 
 ```
 
+
+
 ```{r}
 ggplot() + 
-    geom_point(data = NYweath48_Jan, aes(x = year, y = TMAX), month = "January") +
-    geom_abline(aes(intercept = 10.92079, slope = 0.01406, month = "January", lab = "January")) + 
+    geom_point(data = NYweath48_Jan, aes(x = year, y = TMAX, colour = "January"), col = "blue") +
+    geom_abline(aes(intercept = 10.92079, slope = 0.01406, colour = "January"), col = "blue", size = 2) + 
+    geom_point(data = NYweath48_Jul, aes(x = year, y = TMAX, colour = "July"), colour = "green") +
+    geom_abline(aes(intercept = 57.32767, slope = 0.01406, colour = "July"), col = "green", size = 2, lab = "July") +
 #    geom_point(data = NYweath48_Apr, aes(x = year, y = TMAX), col = "orange") +
 #    geom_abline(aes(intercept = 33.57326, slope = 0.01406, col = "orange", lab = "April")) + 
-    geom_point(data = NYweath48_Jul, aes(x = year, y = TMAX), col = "green") +
-    geom_abline(aes(intercept = 57.32767, slope = 0.01406, col = "green", lab = "July")) +
 #    geom_point(data = NYweath48_Oct, aes(x = year, y = TMAX, col = "blue")) +
 #    geom_abline(aes(intercept = 37.41768, slope = 0.01406, col = "blue", lab = "October")) +
-  coord_cartesian(xlim = c(1949, 2022), ylim = c(0, 125)) + 
+    coord_cartesian(xlim = c(1949, 2022), ylim = c(0, 120)) + 
     ggtitle("Maximum Daily Temperature in Central Park") + 
+    scale_colour_manual(name="Line Color",
+      values=c(January="blue", July="green"))
     labs(
         x = "Year",
         y = "Maximum Daily Temperature",
-        title = "Maximum Daily Temperature in Central Park")
+        title = "Maximum Daily Temperature in Central Park",
+        )
 
 ```
 
