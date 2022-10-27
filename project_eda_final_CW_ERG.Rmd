@@ -988,7 +988,7 @@ NYweath_sub %>%
     ggtitle("Minimum Daily Temperature in Central Park")
 ```
 
-What a mess! Wait, of course this will look like a mess, because temperature oscillates with the seasons! Let's make sure this oscillation is present in the data by looking at just a 2-year window of minimum daily temperatures from 2018 to the present.
+What a mess! Wait, of course this will look like a mess, because temperature oscillates with the seasons! Let's make sure this oscillation is present in the data by looking at just a 2-year window of minimum daily temperatures from 2018 to the present.  
 
 ```{r}
 Recent_weath <- subset(NYweath_sub, year > 2017) 
@@ -998,7 +998,7 @@ Recent_weath %>%
     ggtitle("Minimum Daily Temperature in Central Park")
 ```
 
-How reassuring! Now, let's look at the maximum daily temperatures.
+How reassuring! Now, let's look at the maximum daily temperatures.  
 
 ```{r}
 Recent_weath <- subset(NYweath_sub, year > 2017) 
@@ -1008,9 +1008,9 @@ Recent_weath %>%
     ggtitle("Maximum Daily Temperature in Central Park")
 ```
 
-Cool. We could fit these data to sine curves to determine the amplitudes or center points of oscillation along with confidence intervals, and compare them to the results for way earlier in the 20th or 19th centuries, to see if there are statistical differences in the curve fit parameters across the 100-year window.
+Cool. We could fit these data to sine curves to determine the amplitudes or center points of oscillation along with confidence intervals, and compare them to the results for way earlier in the 20th or 19th centuries, to see if there are statistical differences in the curve fit parameters across the 100-year window.  
 
-What about trends in daily temperature range (daily high minus daily low)?
+What about trends in daily temperature range (daily high minus daily low)?  
 
 ```{r}
 Recent_weath$rang <- (Recent_weath$TMAX - Recent_weath$TMIN)
@@ -1025,18 +1025,18 @@ Recent_weath %>%
     
 ```
 
-Interesting... I do see a trend here too: the greatest daily variation in temperature in Central Park appears to have some periodicity. We could compute the average daily temperature variation for each month, perhaps over the 100 year interval, to see if some months have statistically higher daily temperature variations.
+Interesting... I do see a trend here too: the greatest daily variation in temperature in Central Park appears to have some periodicity. We could compute the average daily temperature variation for each month, perhaps over the 100 year interval, to see if some months have statistically higher daily temperature variations.  
 
-## Linear regression of TMAX \~ year
+## Linear regression of TMAX \~ year  
 
 ```{r}
 maxTfit0 <- lm(formula = TMAX ~ year, data = NYweath_sub )
 summary(maxTfit0)
 ```
 
-## Multiple linear regression with month as a categorical variable
+## Multiple linear regression with month as a categorical variable  
 
-Trying a fit on TMAX for all data using month as a factor variable.
+Trying a fit on TMAX for all data using month as a factor variable.  
 
 ```{r}
 maxTfit1 <- lm(formula = TMAX ~ year + month, data = NYweath_sub )
@@ -1044,9 +1044,9 @@ summary(maxTfit1)
 
 ```
 
-The multiple r-squared (and adjusted r-squared) fits are much better here, at 0.775. This may simply be because there are many more data points than when using monthly averages. So-- that full mess of data was all useful!
+The multiple r-squared (and adjusted r-squared) fits are much better here, at 0.775. This may simply be because there are many more data points than when using monthly averages. So-- that full mess of data was all useful!  
 
-Here are the equations:
+Here are the equations:  
 
 January: -23.3 + 0.0316 `year`\
 February: -23.3+ 1.38 + 0.0316 `year`\
@@ -1061,9 +1061,9 @@ October: -23.3 + 26.2 + 0.0316 `year`\
 November: -23.3 + 14.1 + 0.0316 `year`\
 December: -23.3 + 3.71 + 0.0316 `year`
 
-On average, maximum daily temperatures in this location in central park have been increasing by 0.0316 degrees Fahrenheit per year over the time frame of the data set (1869 to 2022).
+On average, maximum daily temperatures in this location in central park have been increasing by 0.0316 degrees Fahrenheit per year over the time frame of the data set (1869 to 2022).  
 
-## Linear regression of TMAX \~ year \* month
+## Linear regression of TMAX \~ year \* month  
 
 ```{r}
 maxTfit2 <- lm(formula = TMAX ~ year*month, data = NYweath_sub )
@@ -1071,7 +1071,7 @@ summary(maxTfit2)
 
 ```
 
-The equations, including interaction terms, are:
+The equations, including interaction terms, are:  
 
 January: -2.998 + 0.01814 `year`\
 February: -48.49 + -2.998 (0.02563 + 0.01814) `year`\
@@ -1086,11 +1086,11 @@ October: 16.26 + -2.998 + (0.00511 + 0.01814) `year`\
 November: -31.07 + -2.998 + (0.02330 + 0.01814) `year`\
 December: -36.39 + -2.998 + (0.02061 + 0.01814) `year`
 
-Essentially the same r-squared here. The interaction terms are significant for February, March, April, August, November, and December, meaning that the change in temperature over time is likely different for these months. The warming is greatest in February, March, April, November, and December.
+Essentially the same r-squared here. The interaction terms are significant for February, March, April, August, November, and December, meaning that the change in temperature over time is likely different for these months. The warming is greatest in February, March, April, November, and December.  
 
-Now, let's subset to 1900 to 2022.
+Now, let's subset to 1900 to 2022.  
 
-## Looking only at data from 1900 on
+## Looking only at data from 1900 on  
 
 ```{r}
 NYweath_00 <- subset (NYweath_sub, year > 1899) # subsetting to 20th century and later
