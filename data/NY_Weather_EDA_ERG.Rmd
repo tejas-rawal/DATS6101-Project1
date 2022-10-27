@@ -34,6 +34,7 @@ xkablesummary(NYweath)
 #str(NYweath)                      
 #cablehead(NYweath, n=5)
 #tail(NYweath, n=2)
+nrow(NYweath)
 
 ```
 
@@ -117,16 +118,16 @@ Recent_weath %>%
 
 Interesting... I do see a trend here too: the greatest daily variation in temperature in Central Park appears to occur in later winter/early spring. We could compute the average daily temperature variation for each month, perhaps over the 100 year interval, to see if some months have statistically higher daily temperature variations.
 
-## Linear regression of TMAX ~ year
+## Linear regression of TMAX \~ year
 
 ```{r}
 maxTfit0 <- lm(formula = TMAX ~ year, data = NYweath_sub )
 summary(maxTfit0)
 ```
 
-## Multiple linear regression with month as a categorical variable  
+## Multiple linear regression with month as a categorical variable
 
-Trying a fit on TMAX for all data using month as a factor variable.  
+Trying a fit on TMAX for all data using month as a factor variable.
 
 ```{r}
 maxTfit1 <- lm(formula = TMAX ~ year + month, data = NYweath_sub )
@@ -134,55 +135,53 @@ summary(maxTfit1)
 
 ```
 
-The multiple r-squared (and adjusted r-squared) fits are much better here, at 0.775. This may simply be because there are many more data points than when using monthly averages. So-- that full mess of data was all useful!  
+The multiple r-squared (and adjusted r-squared) fits are much better here, at 0.775. This may simply be because there are many more data points than when using monthly averages. So-- that full mess of data was all useful!
 
-Here are the equations:  
+Here are the equations:
 
-January: -23.3 + 0.0316 `year`  
-February: -23.3+ 1.38 + 0.0316 `year`  
-March: -23.3 + 9.55 + 0.0316 `year`  
-April: -23.3 + 21.2 + 0.0316 `year`  
-May: -23.3 + 32.3 + 0.0316 `year`  
-June: -23.3 + 41.1 + 0.0316 `year`  
-July: -23.3 + 46.1 + 0.0316 `year`  
-August: -23.3 + 44.1 + 0.0316 `year`  
-September: -23.3 + 37.4 + 0.0316 `year`  
-October: -23.3 + 26.2 + 0.0316 `year`  
-November: -23.3 + 14.1 + 0.0316 `year`  
-December: -23.3 + 3.71 + 0.0316 `year`  
-
+January: -23.3 + 0.0316 `year`\
+February: -23.3+ 1.38 + 0.0316 `year`\
+March: -23.3 + 9.55 + 0.0316 `year`\
+April: -23.3 + 21.2 + 0.0316 `year`\
+May: -23.3 + 32.3 + 0.0316 `year`\
+June: -23.3 + 41.1 + 0.0316 `year`\
+July: -23.3 + 46.1 + 0.0316 `year`\
+August: -23.3 + 44.1 + 0.0316 `year`\
+September: -23.3 + 37.4 + 0.0316 `year`\
+October: -23.3 + 26.2 + 0.0316 `year`\
+November: -23.3 + 14.1 + 0.0316 `year`\
+December: -23.3 + 3.71 + 0.0316 `year`
 
 On average, maximum daily temperatures in this location in central park have been increasing by 0.0316 degrees Fahrenheit per year over the time frame of the data set (1869 to 2022).
 
-## Linear regression of TMAX ~ year * month  
-
+## Linear regression of TMAX \~ year \* month
 
 ```{r}
 maxTfit2 <- lm(formula = TMAX ~ year*month, data = NYweath_sub )
 summary(maxTfit2)
 
 ```
-The equations, including interaction terms, are:  
 
-January: -2.998 + 0.01814 `year`  
-February: -48.49 + -2.998 (0.02563 + 0.01814) `year`  
-March: -60.35 + -2.998 + (0.03592 + 0.01814) `year`  
-April: -37.07 + -2.998 + (0.02993 + 0.01814) `year`  
-May: 19.85 + -2.998 + (0.00641 + 0.01814) `year`  
-June: 47.84 + -2.998 + (0.02563 + 0.01814) `year`  
-July: 39.37 + -2.998 + (0.0328 + 0.01814) `year`  
-August: 22.69 + -2.998 + (0.01103 + 0.01814) `year`  
-September: 26.84 + -2.998 + (0.00541 + 0.01814) `year`  
-October: 16.26 + -2.998 + (0.00511 + 0.01814) `year`  
-November: -31.07 + -2.998 + (0.02330 + 0.01814) `year`  
-December: -36.39 + -2.998 + (0.02061 + 0.01814) `year`  
+The equations, including interaction terms, are:
 
+January: -2.998 + 0.01814 `year`\
+February: -48.49 + -2.998 (0.02563 + 0.01814) `year`\
+March: -60.35 + -2.998 + (0.03592 + 0.01814) `year`\
+April: -37.07 + -2.998 + (0.02993 + 0.01814) `year`\
+May: 19.85 + -2.998 + (0.00641 + 0.01814) `year`\
+June: 47.84 + -2.998 + (0.02563 + 0.01814) `year`\
+July: 39.37 + -2.998 + (0.0328 + 0.01814) `year`\
+August: 22.69 + -2.998 + (0.01103 + 0.01814) `year`\
+September: 26.84 + -2.998 + (0.00541 + 0.01814) `year`\
+October: 16.26 + -2.998 + (0.00511 + 0.01814) `year`\
+November: -31.07 + -2.998 + (0.02330 + 0.01814) `year`\
+December: -36.39 + -2.998 + (0.02061 + 0.01814) `year`
 
-Essentially the same r-squared here. The interaction terms are significant for February, March, April, August, November, and December, meaning that the change in temperature over time is likely different for these months. The warming is greatest in February, March, April, November, and December.  
+Essentially the same r-squared here. The interaction terms are significant for February, March, April, August, November, and December, meaning that the change in temperature over time is likely different for these months. The warming is greatest in February, March, April, November, and December.
 
-Now, let's subset to 1900 to 2022.  
+Now, let's subset to 1900 to 2022.
 
-##Looking only at data from 1900 on  
+## Looking only at data from 1900 on
 
 ```{r}
 NYweath_00 <- subset (NYweath_sub, year > 1899) # subsetting to 20th century and later
@@ -190,17 +189,14 @@ xkabledplyhead(NYweath_00)
 
 ```
 
-
-## Linear regression of TMAX ~ year from 1900 on.  
-
+## Linear regression of TMAX ~ year from 1900 on.
 
 ```{r}
 maxTfit00_0 <- lm(formula = TMAX ~ year, data = NYweath_00 )
 summary(maxTfit00_0)
 ```
 
-
-## Linear regression of TMAX ~ year + month from 1900 on.  
+## Linear regression of TMAX ~ year + month from 1900 on.
 
 ```{r}
 maxTfit00_1 <- lm(formula = TMAX ~ year + month, data = NYweath_00 )
@@ -208,105 +204,115 @@ summary(maxTfit00_1)
 
 ```
 
-## Linear regression of TMAX ~ year*month from 1900 on.  
+## Linear regression of TMAX ~ year * month from 1900 on.
 
 ```{r}
-maxTfit00_2 <- lm(formula = TMAX ~ year*month, data = NYweath_00 )
+maxTfit00_2 <- lm(formula = TMAX ~ year * month, data = NYweath_00 )
 summary(maxTfit00_2)
 
 ```
 
-```{r}
-NYweath00_Jan <- filter(NYweath_00, month == "01")
-NYweath00_Feb <- filter(NYweath_00, month == "02")
-NYweath00_Mar <- filter(NYweath_00, month == "03")
-NYweath00_Apr <- filter(NYweath_00, month == "04")
-NYweath00_May <- filter(NYweath_00, month == "05")
-NYweath00_Jun <- filter(NYweath_00, month == "06")
-NYweath00_Jul <- filter(NYweath_00, month == "07")
-NYweath00_Aug <- filter(NYweath_00, month == "08")
-NYweath00_Sep <- filter(NYweath_00, month == "09")
-NYweath00_Oct <- filter(NYweath_00, month == "10")
-NYweath00_Nov <- filter(NYweath_00, month == "11")
-NYweath00_Dec <- filter(NYweath_00, month == "12")
-
-xkabledplyhead(NYweath48_Jan)
-```
+## Plotting daily max temp since 2000 colored by month
 
 ```{r}
-ggplot() + 
-    geom_point(data = NYweath_00, aes(x = DATE, y = TMAX, colour = month)) +
-  labs(
+ggplot(NYweath_00, aes(x = DATE, y = TMAX, color = month)) + 
+    geom_point(alpha = 0.6) +
+    scale_color_manual(values = c("01" = "purple4",
+                                  "02" = "purple",
+                                  "03" = "dodgerblue",
+                                  "04" = "cyan4",
+                                  "05" = "yellow",
+                                  "06" = "darkgoldenrod1",
+                                  "07" = "red",
+                                  "08" = "orange", 
+                                  "09" = "yellow",
+                                  "10" = "green",
+                                  "11" = "turquoise",
+                                  "12" = "steelblue")) +
+      labs(
         x = "Year",
         y = "Maximum Daily Temperature",
-        title = "Maximum Daily Temperature in Central Park",
-        )
-
+        title = "Maximum Daily Temperature in Central Park") +
+    xlab(label = "Year") +
+    ylab(label = "Maximum daily temperature") +
+    ggtitle(label = "Maximum Daily Temperature in Central Park") +
+    stat_smooth(method = "lm",
+            formula = y ~ x,
+            geom = "smooth",
+            color = "black",
+            show.legend = F)
 ```
-
+## Plotting the same data, but removing all but January and July
 
 ```{r}
-ggplot() + 
-    geom_point(data = NYweath00_Jan, aes(x = year, y = TMAX, colour = "January"), col = "red") +
-    geom_abline(aes(intercept = 10.92079, slope = 0.01406, colour = "January"), col = "red", size = 2) + 
-    geom_point(data = NYweath00_Jul, aes(x = year, y = TMAX, colour = "July"), colour = "blue") +
-    geom_abline(aes(intercept = 57.32767, slope = 0.01406, colour = "July"), col = "blue", size = 2, lab = "July") +
-#    geom_point(data = NYweath48_Apr, aes(x = year, y = TMAX), col = "orange") +
-#    geom_abline(aes(intercept = 33.57326, slope = 0.01406, col = "orange", lab = "April")) + 
-#    geom_point(data = NYweath48_Oct, aes(x = year, y = TMAX, col = "blue")) +
-#    geom_abline(aes(intercept = 37.41768, slope = 0.01406, col = "blue", lab = "October")) +
-    coord_cartesian(xlim = c(1900, 2022), ylim = c(0, 120)) + 
-    ggtitle("Maximum Daily Temperature in Central Park") + 
-    scale_colour_manual(name="Line Color",
-      values=c(January="blue", July="green"))
+ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
+    geom_point() +
+    scale_color_manual(values = c("01" = "purple4",
+                                   "07" = "red"), na.value = NA) +
+    geom_abline(aes(intercept = -11.05508, slope = 0.02539), col = "black", size = 1) + 
+    geom_abline(aes(intercept = 34.98295, slope = 0.02539), col = "black", size = 1) +
+  
     labs(
         x = "Year",
         y = "Maximum Daily Temperature",
-        title = "Maximum Daily Temperature in Central Park",
-        )
+        title = "Maximum Daily Temperature in Central Park") +
+    xlab(label = "Year") +
+    ylab(label = "Maximum daily temperature") +
+    ggtitle(label = "Maximum Daily Temperature in Central Park")
+#    stat_smooth(method = "lm",
+#            formula = y ~ x,
+#            geom = "smooth",
+#            color = "black",
+#            show.legend = F)
+```
+###Greyscale daily max temps from 1900-2022
 
+```{r}
+ggplot(NYweath_00, aes(x = DATE, y = TMAX, color = month)) + 
+    geom_point(alpha = 0.7) +
+    scale_color_manual(values = c("01" = "gray35",
+                                  "02" = "gray35",
+                                  "03" = "gray35",
+                                  "04" = "gray35",
+                                  "05" = "gray35",
+                                  "06" = "gray35",
+                                  "07" = "gray35",
+                                  "08" = "gray35", 
+                                  "09" = "gray35",
+                                  "10" = "gray35",
+                                  "11" = "gray35",
+                                  "12" = "gray35")) +
+      labs(
+        x = "Year",
+        y = "Maximum Daily Temperature",
+        title = "Maximum Daily Temperature in Central Park") +
+    xlab(label = "Year") +
+    ylab(label = "Maximum daily temperature") +
+    ggtitle(label = "Maximum Daily Temperature in Central Park") +
+    stat_smooth(method = "lm",
+            formula = y ~ x,
+            geom = "smooth",
+            color = "black",
+            show.legend = F)
 ```
 
-The equations are: 
 
-
-
-
-## Subsetting from 1948 on  
-
+## Subsetting from 1948 on
 
 ```{r}
 NYweath_48 <- subset (NYweath_sub, year > 1947) # subsetting to 1948 and later for comparison with JFK data
 xkabledplyhead(NYweath_48)
 
 ```
-```{r}
-NYweath48_Jan <- filter(NYweath_48, month == "01")
-NYweath48_Feb <- filter(NYweath_48, month == "02")
-NYweath48_Mar <- filter(NYweath_48, month == "03")
-NYweath48_Apr <- filter(NYweath_48, month == "04")
-NYweath48_May <- filter(NYweath_48, month == "05")
-NYweath48_Jun <- filter(NYweath_48, month == "06")
-NYweath48_Jul <- filter(NYweath_48, month == "07")
-NYweath48_Aug <- filter(NYweath_48, month == "08")
-NYweath48_Sep <- filter(NYweath_48, month == "09")
-NYweath48_Oct <- filter(NYweath_48, month == "10")
-NYweath48_Nov <- filter(NYweath_48, month == "11")
-NYweath48_Dec <- filter(NYweath_48, month == "12")
 
-xkabledplyhead(NYweath48_Jan)
-```
-
-
-
-## Linear regression of TMAX ~ year from 1949 on.
+## Linear regression of TMAX \~ year from 1949 on.
 
 ```{r}
 maxTfit48_0 <- lm(formula = TMAX ~ year, data = NYweath_48 )
 summary(maxTfit48_0)
 ```
 
-## Linear regression of TMAX ~ year + month from 1948 on.
+## Linear regression of TMAX \~ year + month from 1948 on.
 
 ```{r}
 maxTfit48_1 <- lm(formula = TMAX ~ year + month, data = NYweath_48 )
@@ -314,7 +320,7 @@ summary(maxTfit48_1)
 
 ```
 
-## Linear regression of TMAX ~ year * month from 1948 on.
+## Linear regression of TMAX \~ year \* month from 1948 on.
 
 ```{r}
 maxTfit48_2 <- lm(formula = TMAX ~ year*month, data = NYweath_48 )
@@ -324,76 +330,37 @@ summary(maxTfit48_2)
 
 
 
-```{r}
-ggplot() + 
-    geom_point(data = NYweath48_Jan, aes(x = year, y = TMAX, colour = "January"), col = "blue") +
-    geom_abline(aes(intercept = 10.92079, slope = 0.01406, colour = "January"), col = "blue", size = 2) + 
-    geom_point(data = NYweath48_Jul, aes(x = year, y = TMAX, colour = "July"), colour = "green") +
-    geom_abline(aes(intercept = 57.32767, slope = 0.01406, colour = "July"), col = "green", size = 2, lab = "July") +
-#    geom_point(data = NYweath48_Apr, aes(x = year, y = TMAX), col = "orange") +
-#    geom_abline(aes(intercept = 33.57326, slope = 0.01406, col = "orange", lab = "April")) + 
-#    geom_point(data = NYweath48_Oct, aes(x = year, y = TMAX, col = "blue")) +
-#    geom_abline(aes(intercept = 37.41768, slope = 0.01406, col = "blue", lab = "October")) +
-    coord_cartesian(xlim = c(1949, 2022), ylim = c(0, 120)) + 
-    ggtitle("Maximum Daily Temperature in Central Park") + 
-    scale_colour_manual(name="Line Color",
-      values=c(January="blue", July="green"))
-    labs(
-        x = "Year",
-        y = "Maximum Daily Temperature",
-        title = "Maximum Daily Temperature in Central Park",
-        )
+I wonder if we'll get something different if we look at weather in a more built environment. Starting a new RMD file for this (JFK airport).
 
+```{r}
+JFKweath <- data.frame(read.csv("JFK_weather_1949-2022.csv"))
+xkablesummary(JFKweath)
+```
+```{r, r = "as is"}
+#converting to R date format and adding columns for day, month, and year
+JFKweath$DATE <- as.Date(JFKweath$DATE)
+JFKweath$day <- format(JFKweath$DATE, format="%d")
+JFKweath$month <- format(JFKweath$DATE, format="%m")
+JFKweath$year <- format(JFKweath$DATE, format="%Y")
+
+#converting temperature observations to numerics
+JFKweath$TMAX <- as.numeric(JFKweath$TMAX)
+JFKweath$TMIN <- as.numeric(JFKweath$TMIN)
+JFKweath$TAVG <- as.numeric(JFKweath$TAVG)
+JFKweath$year <- as.numeric(JFKweath$year)
+
+#Making month a factor
+NYweath$month <- as.factor(NYweath$month)
+
+#creating a subset of the weather data
+JFKweath_sub <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
+xkablesummary(JFKweath_sub)
 ```
 
-
-
-
-I wonder if we'll get something different if we look at weather in a more built environment. Starting a new RMD file for this.
-
-In the meantime, let us plot data for the most distinct months, first without interaction terms.
+## Multiple linear regression for JFK from 1948 on
 
 ```{r}
-NYweath_Jan <- filter(NYweath_tc2, month == "01")
-NYweath_Feb <- filter(NYweath_tc2, month == "02")
-NYweath_Mar <- filter(NYweath_tc2, month == "03")
-NYweath_Apr <- filter(NYweath_tc2, month == "04")
-NYweath_May <- filter(NYweath_tc2, month == "05")
-NYweath_Jun <- filter(NYweath_tc2, month == "06")
-NYweath_Jul <- filter(NYweath_tc2, month == "07")
-NYweath_Aug <- filter(NYweath_tc2, month == "08")
-NYweath_Sep <- filter(NYweath_tc2, month == "09")
-NYweath_Oct <- filter(NYweath_tc2, month == "10")
-NYweath_Nov <- filter(NYweath_tc2, month == "11")
-NYweath_Dec <- filter(NYweath_tc2, month == "12")
+jmaxTfit1 <- lm(formula = TMAX ~ year + month, data = JFKweath_sub )
+summary(jmaxTfit1)
 
-xkabledplyhead(NYweath_Jan)
-#ggplot(data = NYweath_Jan) + 
-#    geom_point(aes(x = year, y = TMAX))
-
-```
-
-```{r}
-
-
-ggplot(data = NYweath_Jan) + 
-    geom_point(aes(x = year, y = TMAX)) +
-    geom_abline(aes(intercept = 30.59725, slope = 0.01619, color = "red")) + 
-    coord_cartesian(xlim = c(1949, 2022), ylim = c(0, 125)) + 
-    ggtitle("Maximum Daily Temperature in Central Park") + 
-    labs(
-        x = "Year",
-        y = "Maximum Daily Temperature",
-        title = "Maximum Daily Temperature in Central Park")
-
-```
-
-```{r}
-NYweath_tc2 %>%
-  ggplot() +
-    geom_point(x=year, y=TMAX) +
-#    geom_point((x = NYweath_Apr$year, y = NYweath_Apr$TMAX)) +
-#    geom_point((x = NYweath_Jul$year, y = NYweath_Jul$TMAX)) +
-#    geom_point((x = NYweath_Oct$year, y = NYweath_Oct$TMAX)) +
-    ggtitle("Maximum Daily Temperature in Central Park")
 ```
