@@ -24,7 +24,7 @@ library(ezids)
 library(dplyr)
 ```
 
-##EDA with NYC Weather Data
+##EDA with NYC Weather Data : import and cleaning
 
 ```{r, results="asis"}
 #loading packages and data 
@@ -37,6 +37,8 @@ xkablesummary(NYweath)
 nrow(NYweath)
 
 ```
+
+##More cleaning  
 
 ```{r, r = "as is"}
 #converting to R date format and adding columns for day, month, and year
@@ -116,7 +118,7 @@ Recent_weath %>%
     
 ```
 
-Interesting... I do see a trend here too: the greatest daily variation in temperature in Central Park appears to occur in later winter/early spring. We could compute the average daily temperature variation for each month, perhaps over the 100 year interval, to see if some months have statistically higher daily temperature variations.
+Interesting... I do see a trend here too: the greatest daily variation in temperature in Central Park appears to have some periodicity. We could compute the average daily temperature variation for each month, perhaps over the 100 year interval, to see if some months have statistically higher daily temperature variations.
 
 ## Linear regression of TMAX \~ year
 
@@ -212,7 +214,7 @@ summary(maxTfit00_2)
 
 ```
 
-## Plotting daily max temp since 2000 colored by month
+## Plotting daily max temp since 2000 with color as month
 
 ```{r}
 ggplot(NYweath_00, aes(x = DATE, y = TMAX, color = month)) + 
@@ -330,7 +332,9 @@ summary(maxTfit48_2)
 
 
 
-I wonder if we'll get something different if we look at weather in a more built environment. Starting a new RMD file for this (JFK airport).
+I wonder if we'll get something different if we look at weather in a more built environment. Starting a new RMD file for this (JFK airport).  
+
+##JFK Data!
 
 ```{r}
 JFKweath <- data.frame(read.csv("JFK_weather_1949-2022.csv"))
@@ -357,7 +361,7 @@ JFKweath_sub <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, 
 xkablesummary(JFKweath_sub)
 ```
 
-## Multiple linear regression for JFK from 1948 on
+## Multiple linear regression for JFK from 1948 on  
 
 ```{r}
 jmaxTfit1 <- lm(formula = TMAX ~ year + month, data = JFKweath_sub )
