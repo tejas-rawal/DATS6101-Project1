@@ -1,19 +1,392 @@
 ---
-title: "CW_project1"
-author: "Chris W"
-date: "2022-10-16"
-output: html_document
+title: "Project 1 EDA: Central Park Weather Analysis"
+author: "Christopher Washer, Emily Grumbling, Tejas Rawal"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r init, include=F}
+# The package "ezids" (EZ Intro to Data Science) includes a lot of the helper functions we developed for the course. 
+# Some of the frequently used functions are loadPkg(), xkabledply(), xkablesummary(), uzscale(), etc.
+library(ezids)
+# tidyverse includes ggplot2
+library(tidyverse)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+options(scientific=T, digits = 3) 
+```
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# NYC Weather Data: Temperature analysis
+
+```{r load data}
+nyc_weather <- tibble(read.csv("../data/NYC_weather_1869_2022.csv")) %>%
+  dplyr::select(TMAX, TMIN, DATE, PRCP, SNOW)
+# view structure
+str(nyc_weather)
+# get summary
+xkablesummary(nyc_weather)
+```
+
+Convert DATE column from `char` to `Date` type
+```{r}
+nyc_weather <- nyc_weather %>%
+  mutate(DATE = as.Date(DATE, format="%Y-%m-%d"))
+
+# review dataset structure
+xkablesummary(nyc_weather)
+```
+
+Add a MONTH column to the dataset. The month is extracted from the DATE.  
+Subset data for DATE > 1900
+```{r}
+nyc_weather <- nyc_weather %>%
+  filter(lubridate::year(DATE) >= 1900) %>%
+  mutate(MONTH = lubridate::month(DATE, label=T))
+
+str(nyc_weather)
+# review dataset structure
+xkablesummary(nyc_weather)
+```
+
+### Temperature Plots
+```{r}
+
+mean_tmax <- mean(nyc_weather$TMAX)
+mean_tmin <- mean(nyc_weather$TMIN)
+
+ggplot(nyc_weather) +
+  geom_histogram(aes(x=TMAX, fill="Max Temp."), na.rm=TRUE, alpha=0.5, color="black", bins=100, binwidth=2) +
+  geom_vline(xintercept=mean_tmax, color="red", size=1, linetype=5, show.legend=FALSE) +
+  annotate("text", x=mean_tmax + 9, y=2000, label=paste(round(mean_tmax, 2), "°F" ), angle=0, size=4, color="darkred") +
+  geom_histogram(aes(x=TMIN, fill="Min Temp."), na.rm=TRUE, alpha=0.5, color="black", bins=100, binwidth=2) +
+  geom_vline(xintercept=mean_tmin, color="blue", size=1, linetype=5, show.legend=FALSE) +
+  annotate("text", x=mean_tmin - 9, y=2000, label=paste(round(mean_tmin, 2), "°F" ), angle=0, size=4, color="darkblue") +
+  labs(title="Distribution of Minimum and Maximum Daily Temperatures", x="Temperature (°F)", y="Count") +
+  scale_y_continuous(position = "right") +
+  scale_fill_manual(name="Column", values=c("Max Temp."="red","Min Temp."="blue"))
+
+nyc_weather %>%
+  ggplot(aes(y=TMAX)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black", fill="red") +
+  labs(title="TMAX Boxplot", y="Temperature (°F)")
+
+nyc_weather %>%
+  ggplot(aes(y=TMIN)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black", fill="steelblue") +
+  labs(title="TMIN Boxplot", x="", y="Temperature (°F)")
+
+
+qqnorm(nyc_weather$TMAX,
+       main="QQ Plot TMAX",
+       xlab="Theoretical Quantile",
+       ylab="Temperature  (°F)",
+       col="red")
+qqline(nyc_weather$TMAX, lwd=1, lty=2)
+
+qqnorm(nyc_weather$TMIN,
+       main="QQ Plot TMIN",
+       xlab="Theoretical Quantile",
+       ylab="Temperature  (°F)",
+       col="blue")
+qqline(nyc_weather$TMIN, lwd=1, lty=2)
+```
+
+### Average daily temperature max and min by month, all time
+```{r average daily temperature analysis}
+# group data by month
+# and calculate average
+nyc_weather_by_month <- nyc_weather %>%
+  group_by(MONTH) %>%
+  summarize("Avg Max Temp." = mean(TMAX, na.rm=T),
+            "Avg Min Temp." = mean(TMIN, na.rm=T),
+            avg_prcp = mean(PRCP, na.rm=T),
+            avg_snow = mean(SNOW, na.rm=T))
+
+# side-by-side bar plot
+nyc_weather_by_month %>%
+  dplyr::select(MONTH, "Avg Max Temp.", "Avg Min Temp.") %>%
+  gather(key="Value", value="Temp.", "Avg Max Temp.", "Avg Min Temp.") %>%
+  ggplot(aes(x=MONTH, y=Temp., fill=Value)) +
+  geom_col(na.rm=TRUE, alpha=0.5, color="black", position="dodge") +
+  labs(title="Average Daily Temperature By Month", x="Month", y="Average Temperature (°F)") +
+  scale_fill_manual(values=c("blue", "red"))
+```
+
+
+### Average percipitation and snow fall by month, all time
+```{r}
+nyc_weather_by_month %>%
+  dplyr::select(MONTH, avg_prcp, avg_snow) %>%
+  gather(key = "data_point", value="value", avg_prcp, avg_snow) %>%
+  ggplot(aes(x=MONTH, y=value, fill=data_point)) +
+    geom_col(na.rm=TRUE, alpha=0.7, color="black", position="dodge") +
+    labs(x="Month", y="Amount (inches)")
+```
+
+## Categorical Analysis
+
+For this analysis, I sought to subset the data into 30-50 year periods as such:  
+* 1900-1940: Industrial Revolution  
+* 1940-1980: Cold War Era  
+* 1980-present: Modern Era
+
+### 1900-1940
+#### Temperature and Precipitation Boxplots
+```{r}
+# filter weather data for years 1900-1940
+industrial_era <- nyc_weather %>%
+  dplyr::select(-MONTH) %>%
+  filter(lubridate::year(DATE) >= 1900, lubridate::year(DATE) < 1940)
+
+str(industrial_era)
+
+industrial_era %>%
+  ggplot() +
+  geom_histogram(aes(x=TMAX, fill="TMAX"), na.rm=TRUE, alpha=0.8, fill="steelblue", bins=100, binwidth=2) +
+  labs(title="Distribution of TMAX for Years 1900-1940", x="Temperature (°F)", y="Count")
+
+industrial_era %>%
+  dplyr::select(TMAX, TMIN, DATE) %>%
+  gather(key="data_point", value="value", TMAX, TMIN) %>%
+  ggplot(aes(y=value, fill=data_point)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
+  labs(title="Distribution of TMAX and TMIN for Years 1900-1940", x="Data Point", y="Temperature (°F)")
+
+industrial_era %>%
+  dplyr::select(PRCP, SNOW, DATE) %>%
+  gather(key="data_point", value="value", PRCP, SNOW) %>%
+  filter(value > 0.0) %>%
+  ggplot(aes(y=value, fill=data_point)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
+  labs(title="Distribution of PRCP and SNOW for Years 1900-1940", x="Data Point", y="Amount (inches)")
+
+```
+
+### 1940-1980
+#### Temperature and Precipitation Boxplots
+```{r era-based temperature analysis}
+coldwar_era <- nyc_weather %>%
+  dplyr::select(-MONTH) %>%
+  filter(lubridate::year(DATE) >= 1940, lubridate::year(DATE) < 1980)
+
+str(coldwar_era)
+
+coldwar_era %>%
+  ggplot() +
+  geom_histogram(aes(x=TMAX, fill="TMAX"), na.rm=TRUE, alpha=0.8, fill="steelblue", bins=100, binwidth=2) +
+  labs(title="Distribution of TMAX for Years 1940-1980", x="Temperature (°F)", y="Count")
+
+coldwar_era %>%
+  dplyr::select(TMAX, TMIN, DATE) %>%
+  gather(key="data_point", value="value", TMAX, TMIN) %>%
+  ggplot(aes(y=value, fill=data_point)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
+  labs(title="Distribution of TMAX and TMIN for Years 1940-1980", x="Data Point", y="Temperature (°F)")
+
+coldwar_era %>%
+  dplyr::select(PRCP, SNOW, DATE) %>%
+  gather(key="data_point", value="value", PRCP, SNOW) %>%
+  filter(value > 0.0) %>%
+  ggplot(aes(y=value, fill=data_point)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
+  labs(title="Distribution of PRCP and SNOW for Years 1940-1980", x="Data Point", y="Amount (inches)")
+
+```
+
+### 1980 - present
+#### Temperature and Precipitation Boxplots
+```{r}
+modern_era <- nyc_weather %>%
+  dplyr::select(-MONTH) %>%
+  filter(lubridate::year(DATE) >= 1980)
+
+str(modern_era)
+
+modern_era %>%
+  ggplot() +
+  geom_histogram(aes(x=TMAX, fill="TMAX"), na.rm=TRUE, alpha=0.8, fill="steelblue", bins=100, binwidth=2) +
+  labs(title="Distribution of TMAX for Years 1980-Present", x="Temperature (°F)", y="Count")
+
+modern_era %>%
+  dplyr::select(TMAX, TMIN, DATE) %>%
+  gather(key="data_point", value="value", TMAX, TMIN) %>%
+  ggplot(aes(y=value, fill=data_point)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
+  labs(title="Distribution of TMAX and TMIN for Years 1980-Present", x="Data Point", y="Temperature (°F)")
+
+modern_era %>%
+  dplyr::select(PRCP, SNOW, DATE) %>%
+  gather(key="data_point", value="value", PRCP, SNOW) %>%
+  filter(value > 0.0) %>%
+  ggplot(aes(y=value, fill=data_point)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
+  labs(title="Distribution of PRCP and SNOW for Years 1980-Present", x="Data Point", y="Amount (inches)")
+```
+
+### ANOVA test
+
+#### Mean TMAX by era
+```{r}
+industrial_avg_tmax <- mean(industrial_era$TMAX)
+coldwar_avg_tmax <- mean(coldwar_era$TMAX)
+modern_avg_tmax <- mean(modern_era$TMAX)
+
+industrial_avg_tmax
+coldwar_avg_tmax
+modern_avg_tmax
+```
+
+We can see above that there is an increase in average daily temperature max over the three eras.
+$H_0:$ The average `TMAX` across the three eras is equal.  
+$H_1:$ The average `TMAX` across the three eras is different.  
+$\alpha$: `0.05`
+
+```{r}
+# modify data set by adding ERA column
+industrial_era <- industrial_era %>%
+  mutate(Era = 1)
+coldwar_era <- coldwar_era %>%
+  mutate(Era = 2)
+modern_era <- modern_era %>%
+  mutate(Era = 3)
+# combine data frames
+all_eras <- rbind(industrial_era, coldwar_era, modern_era)
+# convert ERA column to factor/categorical
+all_eras$Era <- factor(all_eras$Era, labels = c("Indst.", "Cold War", "Modern"))
+
+# box plot
+means <- aggregate(TMAX ~ Era, all_eras, mean)
+
+all_eras %>%
+  ggplot(aes(x=Era, y=TMAX, fill=Era)) +
+  geom_boxplot(na.rm=TRUE, alpha=0.7, color="black") +
+  stat_summary_bin(fun="mean", geom="point", shape=20, size=5, show.legend=FALSE) +
+  geom_text(data = means, aes(label=round(TMAX, 2) , y=TMAX - 5)) +
+  labs(title="Distribution of Daily Maximum Temperature By Era", x="Era", y="Temperature (°F)") +
+  scale_fill_brewer(palette="Dark2")
+```
+
+```{r}
+# run ANOVA
+anova_res <- aov(TMAX ~ Era, data = all_eras)
+summary(anova_res)
+xkabledply(anova_res)
+```
+
+With a p-value of `r pf(51, 2, 44826, lower.tail=F)`, we can safely assume that the average daily maximum temperature between the 3 eras is different.
+
+#### Tukey HSD
+
+This tests will analyze the difference between means of the 3 eras:  
+
+```{r}
+tukeyAoV <- TukeyHSD(anova_res, conf.level=0.95)
+tukeyAoV
+plot(tukeyAoV, col="red", cex.axis=0.75)
+```
+
+### Outlier Check on Precipitation
+```{r}
+library(ggrepel)
+# extract PRCP outlier rows into df variable
+# remove zeros
+# group variable by decade, getting sum for each decade
+prcp_no_zeros <- nyc_weather %>%
+  filter(PRCP > 0.0 & !is.na(PRCP))
+prcp_boxplot <- boxplot(prcp_no_zeros$PRCP, ylab = "Temperature (°F)")
+
+prcp_outliers <- boxplot.stats(prcp_no_zeros$PRCP)$out
+prcp_outliers.index <- which(prcp_no_zeros$PRCP %in% c(prcp_outliers))
+prcp_outliers_df <- prcp_no_zeros[prcp_outliers.index, ]
+
+prcp_outliers_df.yearly <- prcp_outliers_df %>%
+  mutate(YEAR = lubridate::year(DATE)) %>%
+  group_by(YEAR) %>%
+  summarize(prcp_total = sum(PRCP, na.rm=T), count = n())
+
+# show top 5 years
+top_5_years.prcp_total <- prcp_outliers_df.yearly %>%
+  slice_max(order_by = prcp_total, n = 5)
+
+prcp_outliers_df.yearly %>%
+  ggplot(aes(x=YEAR, y=prcp_total)) +
+    geom_line(na.rm=TRUE, alpha=0.7, color="darkgreen") +
+    geom_point(na.rm = TRUE, fill="#69b3a2", shape = 21) +
+    geom_text_repel(aes(label=YEAR), data=top_5_years.prcp_total) +
+    labs(x="Year", y="Total Yearly Amount (inches)") +
+    scale_fill_brewer(palette="Spectral")
+
+top_5_years.count <- prcp_outliers_df.yearly %>%
+  slice_max(order_by = count, n = 5)
+
+prcp_outliers_df.yearly %>%
+  ggplot(aes(x=YEAR, y=count)) +
+    geom_line(na.rm=TRUE, alpha=0.7, color="darkgreen") +
+    geom_point(na.rm = TRUE, fill="#69b3a2", shape = 21) +
+    geom_text_repel(aes(label=YEAR), data=top_5_years.count) +
+    labs(title="Precipitation Outlier Days By Year", x="Year", y="Days with Outliers")
+
+# group into decades and create bar plot
+prcp_outliers_df.decades <- prcp_outliers_df %>%
+  mutate(decade = paste(floor(lubridate::year(DATE) / 10) * 10, "s", sep="")) %>%
+  group_by(decade) %>%
+  summarise(prcp_total = sum(PRCP, na.rm=T), count = n())
+
+prcp_outliers_df.decades %>%
+  ggplot(aes(group=1)) +
+  geom_col(aes(x=decade, y=prcp_total), na.rm=TRUE, alpha=0.8, color="black", fill="darkgreen", position="identity") +
+  geom_line(aes(x=decade, y=count), stat="identity", color="#69b3a2", size=1) +
+  labs(title="Precipitation Outlier Days And Total Precipitation By Decade", x="Decade", y="Total Amount (inches)") +
+  scale_y_continuous(sec.axis=sec_axis(~., name="Days with Outliers"))
+
+prcp_outliers_df.decades %>%
+  ggplot(aes(x=decade, y=count)) +
+    geom_col(na.rm=TRUE, alpha=0.7, color="black", fill="#56B4E9", position="identity") +
+    labs(x="Decade", y="Days with Outliers")
+```
+
+### Christmas Snow
+```{r}
+# sum snowfall from 24-25th Dec
+nyc_weather.christmas_snow <- nyc_weather %>%
+  filter(lubridate::month(DATE) == 12, (lubridate::day(DATE) == 24 | lubridate::day(DATE) == 25)) %>%
+  mutate(YEAR = lubridate::year(DATE)) %>%
+  group_by(YEAR) %>%
+  summarise(snowfall = sum(SNOW, na.rm = T))
+
+# how many years has there been snow?
+with_snow <- nyc_weather.christmas_snow %>%
+  filter(snowfall > 0.0)
+
+# highest snowfall year?
+largest_snowfall <- nyc_weather.christmas_snow[which.max(nyc_weather.christmas_snow$snowfall), ]
+
+# yearly plot for years it snowed
+
+with_snow %>%
+  ggplot(aes(x=YEAR, y=snowfall)) +
+    geom_line(na.rm=TRUE, alpha=0.7, color="steelblue", size=1.25) +
+    geom_point(na.rm = TRUE, fill="#00edfa", shape = 21) +
+    geom_label_repel(aes(label=YEAR), data=with_snow) +
+    labs(title="Years With Snowfall on Christmas Eve/Christmas Day", x="Year", y="Snowfall (inches)")
+```
+
+It has snowed on `r nrow(with_snow)` out of `r 2021-1869` Christmases.  
+
+The largest snowfall recorded on Christmas/Christmas Eve was in `r largest_snowfall$YEAR` when it snowed `r largest_snowfall$snowfall` inches!!  
+
+
+
+
 
 # Exploratory Data Analysis
 
@@ -549,6 +922,5 @@ cov_summer_ttest
 
 
 ```
-
 
 
