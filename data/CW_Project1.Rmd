@@ -26,6 +26,16 @@ weather_data <- data.frame(read.csv("NYC_weather_1869_2022.csv"))
 
 ```
 
+##### Install Packages
+
+```{r}
+#install.packages("ggplot2")
+#install.packages("reshape2")
+#install.packages("gridExtra")
+#install.packages("ggpmisc")
+
+```
+
 #### Separating Date into Day/Mont/Year columns
 
 ```{r}
@@ -62,8 +72,7 @@ colnames(month_snow_avg)[3] <- "SNOW_AVG"
 
 month_snow_total <- aggregate(SNOW ~ MONTH + YEAR, weather_data, sum)
 colnames(month_snow_total)[3] <- "SNOT_TOT"
-#month_tmax_avg$date <- paste("01",month_avg$MONTH, month_avg$YEAR, sep = "/")
-#month_tmax_avg$date <- as.Date(month_avg$date,"%d/%m/%Y")
+
 
 monthly_weather <- data.frame(month_tmax_avg, 
                                              month_tmin_avg$TMIN,
@@ -107,8 +116,7 @@ yearly_weather <- data.frame(year_tmax_avg,
                              year_snow_avg$SNOW_AVG, 
                              year_snow_total$SNOT_TOT)
 colnames(yearly_weather)[3:7] <- c("TMIN", "PRCP_AVG", "PRCP_TOT", "SNOW_AVG", "SNOW_TOT")
-#month_avg <- data.frame(month_tmax_avg, month_tmin_avg$TMIN,
-#                        month_precip_avg$PRCP, month_snow_avg$SNOW)
+
 
 yearly_weather_100yr <- subset(yearly_weather, yearly_weather$YEAR > 1899 & yearly_weather$YEAR < 2022)
 
@@ -220,26 +228,23 @@ summary(lm_tmax_yr)
 
 
 coef_tmax_yr <- c(coefficients(lm_tmax_yr), summary(lm_tmax_yr)$adj.r.squared)
-#coef_tmax_day <- c(coefficients(lm_tmax_day), summary(lm_tmax_day)$adj.r.squared)
-#coef_table <- cbind(coef_tmax_day, coef_tmax_yr)
-#coef_table
+coef_tmax_yr
 
-#library(gtsummary)
-#library(tidyr)
-
-#tbl_regression(lm_tmax_day, exponentiate = TRUE)
 
 ```
 
 The table above shows the slope and intercept of the TMAX linear model based on two different approaches.`coef_tmax_day` uses the raw daily TMAX for each year in the dataset while `coef_tmax_yr` uses the yearly tmax averages. 
 
 ```{r}
+
+library(ggpmisc)
+
 yr_tmax_scatter_line <- yearly_tmax_scatter+
   stat_smooth(method = "lm",
               formula = y ~ x,
               geom = "smooth",
               color = "black",
-              show.legend = T)
+              show.legend = F)
 
 yr_tmax_scatter_line
 
@@ -250,51 +255,33 @@ yr_tmax_scatter_line
 The regression line added to the yearly TMAX scatterplot. The slope of the line is `r coef_tmax_yr[2]`. This implies the average daily maximum temperature is increasing by `r coef_tmax_yr[2]` degrees F per year, or by about `r coef_tmax_yr[2]*10` degrees F per decade.  
 
 
-```{r}
-
-#mt_tmax_scatter <- ggplot(monthly_weather_100yr, aes(x = YEAR, y = TMAX, col = MONTH)) + 
- # geom_point() +
-#  labs(x = "Year", y = "Temperature (F)", title = "Yearly Average Maximum Temp")
-
-#mt_tmax_scatter
-
-#mt_tmax_scatter_line <- mt_tmax_scatter+
- # stat_smooth(method = "lm",
-  #            formula = y ~ x + col,
-   #           geom = "smooth",
-    #          color = "black",
-     #         show.legend = T)
-
-#mt_tmax_scatter_line
-
-
-
-```
-
 ### TMIN
 
 ```{r}
 lm_tmin_yr <- lm(TMIN ~ YEAR, data = yearly_weather_100yr)
-lm_tmin_day <- lm(TMIN ~ YEAR, data = weather_100yr)
-summary(lm_tmin_day)
 summary(lm_tmin_yr)
+
+#lm_tmin_day <- lm(TMIN ~ YEAR, data = weather_100yr)
+#summary(lm_tmin_day)
+
 
 #coef_tmin_yr <- coefficients(lm_tmin_yr)
 #coef_tmin_day <- coefficients(lm_tmin_day)
-#coef_table_min <- cbind(coef_tmin_day, coef_tmin_yr)
-#coef_table_min
+
 
 ```
 
 The table above shows the slope and intercept of the TMIN linear model based on two different approaches.`coef_tmin_day` uses the raw daily TMIN for each year in the dataset while `coef_tmin_yr` uses the yearly TMIN averages. 
 
 ```{r}
+
+
 yr_tmin_scatter_line <- yearly_tmin_scatter +
   stat_smooth(method = "lm",
               formula = y ~ x,
               geom = "smooth",
               color = "black",
-              show.legend = T)
+              show.legend = F)
 
 yr_tmin_scatter_line
 
@@ -305,13 +292,13 @@ yr_tmin_scatter_line
 ```{r}
 
 lm_prcp_yr <- lm(PRCP_TOT ~ YEAR, data = yearly_weather_100yr)
-#lm_prcp_month <- lm(PRCP_TOT ~ YEAR + MONTH, data = monthly_weather_100yr)
-#lm_prcp_avg <- lm(PRCP ~ YEAR, data = weather_100yr)
+lm_prcp_month <- lm(PRCP_TOT ~ YEAR + MONTH, data = monthly_weather_100yr)
+lm_prcp_avg <- lm(PRCP_AVG ~ YEAR + MONTH, data = monthly_weather_100yr)
 
-#lm_prcp_day <- lm(PRCP ~ YEAR, data = weather_100yr)
-#summary(lm_prcp_month)
+lm_prcp_day <- lm(PRCP ~ YEAR, data = weather_100yr)
+summary(lm_prcp_month)
 summary(lm_prcp_yr)
-#summary(lm_prcp_avg)
+summary(lm_prcp_avg)
 
 coef_prcp_yr <- c(coefficients(lm_prcp_yr), summary(lm_prcp_yr)$r.square)
 coef_prcp_yr
@@ -329,8 +316,8 @@ yr_prcp_scatter_line <- yearly_prcp_scatter+
               formula = y ~ x,
               geom = "smooth",
               color = "black",
-              show.legend = T) + 
-  labs(title = "Total Yearly Precipitation in Central Park, NYC, 1900-2021")
+              show.legend = F) + 
+  labs(title = "Total Yearly Precipitation")
 
 
 yr_prcp_scatter_line
@@ -351,18 +338,33 @@ coef_snow_yr
 The table above shows the slope and intercept of the TMAX linear model based on two different approaches.`coef_tmax_day` uses the raw daily TMAX for each year in the dataset while `coef_tmax_yr` uses the yearly tmax averages. 
 
 ```{r}
+
+
 yr_snow_scatter_line <- yearly_snow_scatter+
   stat_smooth(method = "lm",
               formula = y ~ x,
               geom = "smooth",
               color = "black",
-              show.legend = T)+
-  labs(title = "Total Yearly Snowfall in Central Park, NYC, 1900-2021")
+              show.legend = F)+
+  labs(title = "Total Yearly Snowfall") 
 
 
 yr_snow_scatter_line
 
 ```
+
+```{r}
+library(gridExtra)
+
+grid.arrange(yr_prcp_scatter_line, yr_snow_scatter_line,
+             yr_tmax_scatter_line, yr_tmin_scatter_line,
+             nrow = 2, 
+             top = "Weather Patterns in Central Park, NYC, from 1900-2021")
+
+
+
+```
+
 
 
 ## Question 3:
@@ -377,11 +379,9 @@ To compare the slope of TMAX from the NYC data set to the known global temp chan
 
 ```{r}
 
-#confint_tmax <- confint(lm_tmax_yr)
-#as.table(confint_tmax)
-
 weather1880 <- subset(monthly_weather, monthly_weather$YEAR > 1879 & monthly_weather$YEAR < 2022)
 yearly_1880 <- subset(yearly_weather, yearly_weather$YEAR > 1879 & yearly_weather$YEAR < 2022)
+
 
 yr1880_scatter <- ggplot(yearly_1880, aes(x = YEAR, y = TMAX)) + 
   geom_point() +
@@ -390,17 +390,23 @@ yr1880_scatter <- ggplot(yearly_1880, aes(x = YEAR, y = TMAX)) +
 
 yr1880_scatter
 
+yr1880_line <- yr1880_scatter +
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth",
+              col = "black") +
+  labs(title = "NYC vs Global Temperature Change since 1880")
+yr1880_line
+
+yr1880_global <- yr1880_line + 
+  geom_abline(aes(intercept = 33.2, slope = 0.014, col = "red")) +
+  scale_color_discrete(name = "Locale", labels = c("Global"))
+
+
+yr1880_global
+
 lm1880 <- lm(TMAX ~ YEAR + MONTH, data = weather1880)
 lm_yr1880 <- lm(TMAX ~ YEAR, data = yearly_1880)
-
-
-#yr1880_line <- +
-#  stat_smooth(method = "lm",
-  #            formula = y ~ x,
-  #            geom = "smooth",
-  #            color = "black",
-  #            show.legend = T)+
-  #labs(title = "Total Yearly Snowfall in Central Park, NYC, 1900-2021")
 
 summary(lm1880)
 summary(lm_yr1880)
@@ -419,11 +425,26 @@ yr1981_scatter <- ggplot(yearly_1981, aes(x = YEAR, y = TMAX)) +
   labs(x = "Year", y = "Temperature (F)", title = "Yearly Average Maximum Temp")
 yr1981_scatter
 
+
+yr1981_line <- yr1981_scatter +
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth",
+              col = "black") +
+  labs(title = "NYC vs Global Temperature Change since 1981")
+yr1981_line
+
+yr1981_global <- yr1981_line + 
+  geom_abline(aes(intercept = -0.6, slope = 0.032, col = "red")) +
+  scale_color_discrete(name = "Locale", labels = c("Global"))
+
+yr1981_global
+
 lm1981 <- lm(TMAX ~ YEAR + MONTH, data = weather1981)
 lm_yearly1981 <- lm(TMAX ~ YEAR, data = yearly_1981)
 lm_all1981 <- lm(TMAX ~ YEAR + MONTH, data = all_1981)
 summary(lm1981)
-summary(lm_yearly1981)
+summary(lm_yearly1981) 
 summary(lm_all1981)
 
 ```
@@ -437,32 +458,97 @@ Are there any notable (and statistically significant) changes in weather pattern
 
 
 ```{r}
-pre_covid_summer <- subset(weather_data,
+library(tibble)
+
+covid_weather <- subset(monthly_weather, YEAR > 2010 & YEAR < 2021 &
+                          (MONTH == "04" |MONTH == "05" | MONTH == "06" |MONTH == "07" |
+                              MONTH == "08"))
+
+covid_weather <- covid_weather %>%
+  add_column(Lockdown = 
+               ifelse(.$YEAR < 2020, "Pre-Lockdown", "Post-Lockdown"),
+             .after = "YEAR")
+
+covid_weather <- covid_weather %>%
+  add_column(Season = 
+               ifelse(.$MONTH == "04" | .$MONTH == "05", "Spring", "Summer"),
+             .after = "YEAR")
+
+
+covid_seasons <- aggregate(TMAX ~ Season + Lockdown, covid_weather, mean)
+covid_seasons$Lockdown <- factor(covid_seasons$Lockdown, levels = c('Pre-Lockdown', 'Post-Lockdown'))
+
+covid_bar2 <- ggplot(covid_seasons, aes(x = Season, y = TMAX, fill = Lockdown, decreasing = TRUE)) +
+  geom_col(position = "dodge") +
+  labs(title = "Seasonal Average Daily Rainfall Pre and Post COVID-19 Lockdown")
+
+covid_bar2
+
+
+```
+
+```{r}
+
+covid_spring_summer <- subset(weather_data,
                            YEAR > 2010 &
-                           YEAR < 2020 &
-                             (MONTH == "04" |MONTH == "05" |MONTH == "06" |MONTH == "07" |
-                              MONTH == "08"))
+                           YEAR <= 2020 &
+                             (MONTH == "04" |MONTH == "05" | MONTH == "06" |
+                                MONTH == "07" | MONTH == "08"))
+covid_spring_summer_ld <- covid_spring_summer %>%
+  add_column(Lockdown = 
+               ifelse(.$YEAR < 2020, "Pre-Lockdown", "Post-Lockdown"),
+             .after = "YEAR")
+covid_spring_summer_ld$Lockdown <- factor(covid_spring_summer_ld$Lockdown, levels = c('Pre-Lockdown', 'Post-Lockdown'))
 
-covid_lockdown <- subset(weather_data,
-                           YEAR == 2020 &
-                           (MONTH == "04" |MONTH == "05" |MONTH == "06" |MONTH == "07" |
-                              MONTH == "08"))
-                           
-#pre_covid_bplot<- ggplot(pre_covid_summer, aes( = PRCP)) +
- # geom_histogram()
+covid_ld_season <- covid_spring_summer_ld %>%
+  add_column(Season = 
+               ifelse(.$MONTH == "04" | .$MONTH == "05", "Spring", "Summer"),
+             .after = "YEAR")
 
-#pre_covid_bplot
+covid_boxplot <- ggplot()+
+  geom_boxplot(data = covid_ld_season, aes(y = TMAX, x = Season, fill = Lockdown)) +
+  labs(title = "Temperature Ranges Pre- and Post- COVID Lockdown")
+
+covid_boxplot
+
+
 
 ```
 
 
 ```{r}
+pre_spring <- subset(weather_data,
+                           YEAR > 2010 & YEAR < 2020 &
+                           (MONTH == "04" |MONTH == "05"))
 
 
-cov_prcp_ttest <- t.test(pre_covid_summer$PRCP, covid_lockdown$PRCP)
+pre_summer <- subset(weather_data,
+                           YEAR > 2010 & YEAR < 2020 &
+                           (MONTH == "06" |MONTH == "07" |
+                            MONTH == "08"))
 
-cov_prcp_ttest
+
+covid_lockdown_spring <- subset(weather_data,
+                           YEAR == 2020 &
+                           (MONTH == "04" |MONTH == "05"))
+
+
+covid_lockdown_summer <- subset(weather_data,
+                           YEAR == 2020 &
+                           (MONTH == "06" |MONTH == "07" |
+                            MONTH == "08"))
+
+library(reshape2)
+
+cov_spring_ttest <- t.test(pre_spring$TMAX, covid_lockdown_spring$TMAX)
+cov_spring_ttest
+
+cov_summer_ttest <- t.test(pre_summer$TMAX, covid_lockdown_summer$TMAX)
+cov_summer_ttest
+
+
 
 ```
+
 
 
