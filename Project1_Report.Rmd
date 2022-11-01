@@ -9,41 +9,114 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+output: html_document: code_folding: hide number_sections: false toc:
+yes toc_depth: 3 toc_float: yes pdf_document: toc: yes toc_depth: '3'
+---
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r init, include=FALSE}
+knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+options(scientific=T, digits = 3) 
 
-```{r cars}
-summary(cars)
+#loading packages 
+library(ggplot2)
+library(ezids)
+library(dplyr)
 ```
 
-## Including Plots
+## Emily's starter Code
 
-You can also embed plots, for example:
+```{r, results="asis"}
+#loading data 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+NYweath <- data.frame(read.csv("data/NYC_weather_1869_2022.csv"))
+#xkablesummary(NYweath)
+JFKweath <- data.frame(read.csv("data/JFK_weather_1949-2022.csv"))
+#xkablesummary(JFKweath)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r, results="asis"}
+#loading packages and data 
 
+NYweath <- data.frame(read.csv("data/NYC_weather_1869_2022.csv"))
+#xkablesummary(NYweath)
+#str(NYweath)                      
+#cablehead(NYweath, n=5)
+#tail(NYweath, n=2)
+#nrow(NYweath)
 
+```
 
+```{r, r = "as is"}
+#converting to R date format and adding columns for day, month, and year
+NYweath$DATE <- as.Date(NYweath$DATE)
+NYweath$day <- format(NYweath$DATE, format="%d")
+NYweath$month <- format(NYweath$DATE, format="%m")
+NYweath$year <- format(NYweath$DATE, format="%Y")
 
+#converting temperature observations to numerics
+NYweath$TMAX <- as.numeric(NYweath$TMAX)
+NYweath$TMIN <- as.numeric(NYweath$TMIN)
+NYweath$TAVG <- as.numeric(NYweath$TAVG)
+NYweath$year <- as.numeric(NYweath$year)
 
-##Introduction - Emily  
+#Making month a factor
+NYweath$month <- as.factor(NYweath$month)
 
+#creating a subset of the weather data that are only date- and temperature-related
+NYweath_sub <- subset(NYweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
+xkablesummary(NYweath_sub)
+```
 
-Data examined, details of dataset-- why chosen? prior research?  
+##Introduction
 
+As scientists, our team is curious about how humans can affect the
+natural environment. We wondered if weather conditions in a highly
+populated region might correlate with notable human activities on a
+global or local scale.
 
-## SMART questions -- Emily  
-Are there statistically measurable changes in weather patterns (e.g., temperature and precipitation levels) over time in New York City?
-Do temperature trends in New York City align with the documented rise in average global temperatures over the last century?
-Are there any notable (and statistically significant) changes in weather patterns after/during the pandemic lockdown (perhaps due to changes in commuting patterns)?
+There is a variety of literature available on global climate change,
+suggesting that the Earth's surface temperature is increasing, on
+average over time, in a way that threatens many lifeforms on our planet.
+This warming is primarily due to human activity: the combustion of
+fossil fuels resulting in the emission of carbon dioxide into the
+atmosphere. We decided to consider local weather trends in a specific
+urban area to see what we might learn.
 
+After some search, we discovered that historical daily weather records
+from locations around the United States are made publicly availably from
+the National Oceanic and Atmospheric Administrative via their website:
+<https://www.ncdc.noaa.gov/cdo-web>. We found that a data station in the
+middle of Central Park in New York City had made more than 56,000 daily
+weather observations dating back to 1869. The variables observed
+included daily maximum temperature in degrees Fahrenheit (TMAX), daily
+minimum temperature in degrees Fahrenheit (TMIN), daily precipitation in
+inches (PRCP), and daily snowfall (in inches). We decided to analyze
+these data to see what trends we might uncover. Our data span the days
+from February 28, 1869, to September 26, 2022.
+
+Temperature data from Central Park have been studied in the past, and
+warming trends were observed; we wanted to see what we might discover on
+our own, from analysis of the original data.
+
+## Our Research Questions
+
+Given that Central Park is an oasis in the middle of a city environment,
+we wondered whether any weather trends correlate with major human
+activities-- both globally and locally. To explore these possibilities,
+we formulated the following preliminary questions:
+
+1.  Are there statistically measurable changes in weather patterns
+    (e.g., temperature and precipitation levels) over time in New York
+    City?\
+2.  Do temperature trends in New York City align with the documented
+    rise in average global temperatures over the last century?\
+3.  Are there any notable (and statistically significant) changes in
+    weather patterns after/during the pandemic lockdown (perhaps due to
+    changes in commuting patterns)?
+
+To dig in, we began with temperature.
 
 ## Temperature - stat tests of temp trends over time  
 

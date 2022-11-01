@@ -1,0 +1,190 @@
+---
+title: "Project writeup"
+author: "Emily"
+date: "2022-10-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Emily's starter Code  
+
+```{r, results="asis"}
+#loading packages and data 
+
+NYweath <- data.frame(read.csv("data/NYC_weather_1869_2022.csv"))
+xkablesummary(NYweath)
+nrow(NYweath)
+```
+
+```{r}
+#converting to R date format and adding columns for day, month, and year
+NYweath$DATE <- as.Date(NYweath$DATE)
+NYweath$day <- format(NYweath$DATE, format="%d")
+NYweath$month <- format(NYweath$DATE, format="%m")
+NYweath$year <- format(NYweath$DATE, format="%Y")
+
+#converting temperature observations to numerics
+NYweath$TMAX <- as.numeric(NYweath$TMAX)
+NYweath$TMIN <- as.numeric(NYweath$TMIN)
+NYweath$TAVG <- as.numeric(NYweath$TAVG)
+NYweath$year <- as.numeric(NYweath$year)
+
+#Making month a factor
+NYweath$month <- as.factor(NYweath$month)
+
+#creating a subset of the weather data that are only date- and temperature-related
+NYweath_sub <- subset(NYweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
+xkablesummary(NYweath_sub)
+
+JFKweath <- data.frame(read.csv("data/JFK_weather_1949-2022.csv"))
+xkablesummary(JFKweath)
+
+JFKweath$DATE <- as.Date(JFKweath$DATE)
+JFKweath$day <- format(JFKweath$DATE, format="%d")
+JFKweath$month <- format(JFKweath$DATE, format="%m")
+JFKweath$year <- format(JFKweath$DATE, format="%Y")
+JFKweath$TMAX <- as.numeric(JFKweath$TMAX)
+JFKweath$TMIN <- as.numeric(JFKweath$TMIN)
+JFKweath$TAVG <- as.numeric(JFKweath$TAVG)
+JFKweath$year <- as.numeric(JFKweath$year)
+NYweath$month <- as.factor(NYweath$month)
+JFKweath_sub <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
+
+```
+```
+
+
+##Introduction  
+
+As scientists, our team is curious about how humans can affect the natural environment. We wondered if weather conditions in a highly populated region might correlate with notable human activities on a global or local scale.  
+
+There is a variety of literature available on global climate change, suggesting that the Earth's surface temperature is increasing, on average over time, in a way that threatens many lifeforms on our planet. This warming is primarily due to human activity: the combustion of fossil fuels resulting in the emission of carbon dioxide into the atmosphere. We decided to consider local weather trends in a specific urban area to see what we might learn.
+
+After some search, we discovered that historical daily weather records from locations around the United States are made publicly availably from the National Oceanic and Atmospheric Administrative via their website: https://www.ncdc.noaa.gov/cdo-web.  We found that a data station in the middle of Central Park in New York City had made more than 56,000 daily weather observations dating back to 1869. The variables observed included daily maximum temperature in degrees Fahrenheit (TMAX), daily minimum temperature in degrees Fahrenheit (TMIN), daily precipitation in inches (PRCP), and daily snowfall (in inches). We decided to analyze these data to see what trends we might uncover. Our data span the days from February 28, 1869, to September 26, 2022.  
+
+Temperature data from Central Park have been studied in the past, and warming trends were observed; we wanted to see what we might discover on our own, from analysis of the original data.  
+
+## Our Research Questions  
+
+Given that Central Park is an oasis in the middle of a city environment, we wondered whether any weather trends correlate with major human activities-- both globally and locally. To explore these possibilities, we formulated the following preliminary questions:  
+
+1. Are there statistically measurable changes in weather patterns (e.g., temperature and precipitation levels) over time in New York City?  
+2. Do temperature trends in New York City align with the documented rise in average global temperatures over the last century?  
+3. Are there any notable (and statistically significant) changes in weather patterns after/during the pandemic lockdown (perhaps due to changes in commuting patterns)?  
+
+To dig in, we began with temperature.  
+
+
+## Temperature - stat tests of temp trends over time  
+
+
+
+## Chris's linear model  - blurb  
+
+## Emily's linear model  
+
+```{r}
+NYweath_00 <- subset (NYweath_sub, year > 1899) # subsetting to 20th century and later
+xkabledplyhead(NYweath_00)
+
+maxTfit00_0 <- lm(formula = TMAX ~ year, data = NYweath_00 )
+summary(maxTfit00_0)
+
+maxTfit00_1 <- lm(formula = TMAX ~ year + month, data = NYweath_00 )
+summary(maxTfit00_1)
+
+maxTfit00_2 <- lm(formula = TMAX ~ year * month, data = NYweath_00 )
+summary(maxTfit00_2)
+
+#Plotting all TMAX data from 1900 on
+ggplot(NYweath_00, aes(x = DATE, y = TMAX, color = month)) + 
+    geom_point(alpha = 0.6) +
+    scale_color_manual(values = c("01" = "purple4",
+                                  "02" = "purple",
+                                  "03" = "dodgerblue",
+                                  "04" = "cyan4",
+                                  "05" = "yellow",
+                                  "06" = "darkgoldenrod1",
+                                  "07" = "red",
+                                  "08" = "orange", 
+                                  "09" = "yellow",
+                                  "10" = "green",
+                                  "11" = "turquoise",
+                                  "12" = "steelblue")) +
+      labs(
+        x = "Year",
+        y = "Maximum Daily Temperature",
+        title = "Maximum Daily Temperature in Central Park") +
+    xlab(label = "Year") +
+    ylab(label = "Maximum daily temperature") +
+    ggtitle(label = "Maximum Daily Temperature in Central Park") +
+    stat_smooth(method = "lm",
+            formula = y ~ x,
+            geom = "smooth",
+            color = "black",
+            show.legend = F)
+```
+
+```{r} 
+ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
+    geom_point() +
+    scale_color_manual(values = c("01" = "purple4",
+                                   "07" = "red"), na.value = NA) +
+    geom_abline(aes(intercept = -11.05508, slope = 0.02539), col = "black", size = 1) + 
+    geom_abline(aes(intercept = 34.98295, slope = 0.02539), col = "black", size = 1) +
+  
+    labs(
+        x = "Year",
+        y = "Maximum Daily Temperature",
+        title = "Maximum Daily Temperature in Central Park") +
+    xlab(label = "Year") +
+    ylab(label = "Maximum daily temperature") +
+    ggtitle(label = "Maximum Daily Temperature in Central Park")
+```
+
+
+## Central Park v. Global average - Chris  
+
+## JFK data, comparable?  - Emily  
+
+```{r}
+
+#Subsetting central park data to observations from 1948 and later for comparison with JFK data
+
+NYweath_48 <- subset (NYweath_sub, year > 1947) 
+
+maxTfit48_0 <- lm(formula = TMAX ~ year, data = NYweath_48 )
+summary(maxTfit48_0)
+
+maxTfit48_1 <- lm(formula = TMAX ~ year + month, data = NYweath_48 )
+summary(maxTfit48_1)
+
+maxTfit48_2 <- lm(formula = TMAX ~ year*month, data = NYweath_48 )
+summary(maxTfit48_2)
+
+# Multiple linear regression for JFK (from 1948 on  
+jmaxTfit1 <- lm(formula = TMAX ~ year + month, data = JFKweath_sub )
+summary(jmaxTfit1)
+
+```
+
+
+How did thinking change? reframing of questioning?  
+Additional data to test our hypothesis of causality  
+
+## Precipitation trends -Tejas' outlier analysis + snowfall at Christmas
+
+## Linear models of precipitation trends over time - Chris
+
+## Correlation between temp / precip -- Emily  ... think about subsequent analyses
+
+## Lockdown - Chris
+
+## Conclusion- terse summary of findings, restate new questions from all sections, ideas for future analyses if you give us more money.    
+
+If we have time, summarize what we learned from each variable, and new questions?  
+

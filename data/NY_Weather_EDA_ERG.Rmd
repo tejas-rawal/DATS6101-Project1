@@ -135,6 +135,7 @@ Trying a fit on TMAX for all data using month as a factor variable.
 maxTfit1 <- lm(formula = TMAX ~ year + month, data = NYweath_sub )
 summary(maxTfit1)
 
+xkablevif(maxTfit1)
 ```
 
 The multiple r-squared (and adjusted r-squared) fits are much better here, at 0.775. This may simply be because there are many more data points than when using monthly averages. So-- that full mess of data was all useful!
@@ -161,6 +162,7 @@ On average, maximum daily temperatures in this location in central park have bee
 ```{r}
 maxTfit2 <- lm(formula = TMAX ~ year*month, data = NYweath_sub )
 summary(maxTfit2)
+xkablevif(maxTfit2)
 
 ```
 
