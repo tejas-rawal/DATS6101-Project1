@@ -64,7 +64,34 @@ NYweath$month <- as.factor(NYweath$month)
 
 #creating a subset of the weather data that are only date- and temperature-related
 NYweath_sub <- subset(NYweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
-xkablesummary(NYweath_sub)
+
+#creating a subset for 1900 on
+NYweath_00 <- subset (NYweath_sub, year > 1899) # subsetting to 20th century and later
+xkabledplyhead(NYweath_00)
+
+#creating a subset for 1948 on for comparison with JFK data
+NYweath_48 <- subset (NYweath_sub, year > 1947)
+
+#now, same for JFK data  
+
+#converting to R date format and adding columns for day, month, and year  
+JFKweath$DATE <- as.Date(JFKweath$DATE)
+JFKweath$day <- format(JFKweath$DATE, format="%d")
+JFKweath$month <- format(JFKweath$DATE, format="%m")
+JFKweath$year <- format(JFKweath$DATE, format="%Y")
+
+#converting temperature observations to numerics
+JFKweath$TMAX <- as.numeric(JFKweath$TMAX)
+JFKweath$TMIN <- as.numeric(JFKweath$TMIN)
+JFKweath$TAVG <- as.numeric(JFKweath$TAVG)
+JFKweath$year <- as.numeric(JFKweath$year)
+
+#Making month a factor
+JFKweath$month <- as.factor(JFKweath$month)
+
+#creating a subset of the weather data that are only date- and temperature-related
+JFKweath_sub <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
+xkablesummary(JFKweath_sub)
 ```
 
 ##Introduction
@@ -76,21 +103,20 @@ global or local scale.
 
 There is a variety of literature available on global climate change,
 suggesting that the Earth's surface temperature is increasing, on
-average over time, in a way that threatens many lifeforms on our planet.
+average, over time in a way that threatens many lifeforms on our planet.
 This warming is primarily due to human activity: the combustion of
 fossil fuels resulting in the emission of carbon dioxide into the
 atmosphere. We decided to consider local weather trends in a specific
 urban area to see what we might learn.
 
 After some search, we discovered that historical daily weather records
-from locations around the United States are made publicly availably from
+from locations around the United States are made publicly availably by
 the National Oceanic and Atmospheric Administrative via their website:
 <https://www.ncdc.noaa.gov/cdo-web>. We found that a data station in the
-middle of Central Park in New York City had made more than 56,000 daily
+middle of Central Park in New York City has made more than 56,000 daily
 weather observations dating back to 1869. The variables observed
 included daily maximum temperature in degrees Fahrenheit (TMAX), daily
-minimum temperature in degrees Fahrenheit (TMIN), daily precipitation in
-inches (PRCP), and daily snowfall (in inches). We decided to analyze
+minimum temperature in degrees Fahrenheit (TMIN), and daily precipitation (PRCP) and snowfall (SNOW) in inches. We decided to analyze
 these data to see what trends we might uncover. Our data span the days
 from February 28, 1869, to September 26, 2022.
 
@@ -120,59 +146,18 @@ To dig in, we began with temperature.
 
 ## Chris's linear model - blurb
 
-## Emily's linear model
+## Emily's linear model Linear Models of Temperature over Time
+
+We then created a linear model of TMAX vs. year to understand the temperature trends since 1900. The fit parameters were statistically significant, and suggested that both the maximum and minimum daily temperatures in New York's Central Park have increased on average over time at a rate of approximately 0.026 degrees per year. While the p-value for this parameter is < 2e-16 (well below the threshold of alpha = 0.05), this overall fit is poor, with an adjusted r-squared value of 0.00245.  
+
 
 ```{r}
-maxTfit0 <- lm(formula = TMAX ~ year, data = NYweath_sub )
-summary(maxTfit0)
-```
-
-```{r}
-maxTfit1 <- lm(formula = TMAX ~ year + month, data = NYweath_sub )
-summary(maxTfit1)
-
-xkablevif(maxTfit1)
-```
-
-```{r}
-maxTfit2 <- lm(formula = TMAX ~ year*month, data = NYweath_sub )
-summary(maxTfit2)
-xkablevif(maxTfit2)
-
-```
-
-## Looking only at data from 1900 on
-
-```{r}
-NYweath_00 <- subset (NYweath_sub, year > 1899) # subsetting to 20th century and later
-xkabledplyhead(NYweath_00)
-
-```
-
-## Linear regression of TMAX \~ year from 1900 on.
-
-```{r}
+# Linear regression of TMAX \~ year from 1900 on.
 maxTfit00_0 <- lm(formula = TMAX ~ year, data = NYweath_00 )
-summary(maxTfit00_0)
+summary(maxTfit00_0)  
 ```
 
-## Linear regression of TMAX \~ year + month from 1900 on.
-
-```{r}
-maxTfit00_1 <- lm(formula = TMAX ~ year + month, data = NYweath_00 )
-summary(maxTfit00_1)
-
-```
-
-## Linear regression of TMAX \~ year \* month from 1900 on.
-
-```{r}
-maxTfit00_2 <- lm(formula = TMAX ~ year * month, data = NYweath_00 )
-summary(maxTfit00_2)
-
-```
-
-## Plotting daily max temp since 2000 with color as month
+The poor fit is likely due to the wide range of daily temperatures that occur in a given year as a result of seasonal variation. The following plot of daily maximum temperatures shows the wide variance of the data around the linear model. 
 
 ```{r}
 ggplot(NYweath_00, aes(x = DATE, y = TMAX, color = month)) + 
@@ -200,8 +185,29 @@ ggplot(NYweath_00, aes(x = DATE, y = TMAX, color = month)) +
             formula = y ~ x,
             geom = "smooth",
             color = "black",
-            show.legend = F)
+            show.legend = F)  
 ```
+
+
+## Linear regression of TMAX \~ year + month from 1900 on.
+
+```{r}
+# Linear regression of TMAX \~ year from 1900 on.
+maxTfit00_0 <- lm(formula = TMIN ~ year, data = NYweath_00 )
+summary(maxTfit00_0)  
+```
+
+In order to improve the fit and model temperature trends more completely, we decided to account for seasonal variation by also including month as a categorical regressor. The resulting fit has an r-squared value of 0.775 and a slope of 0.025 degrees Fahreinheit per year, with all fit parameters' p-values well below 0.05. The different intercepts for the each level of the categorical variable (the twelve months of the year) indicate that January is the coldest and July the hottest month in Central Park, with an average difference in maximum daily temperature of approximately 46 degrees Fahrenheit in any given year over this window.  
+
+
+```{r}
+maxTfit00_1 <- lm(formula = TMAX ~ year + month, data = NYweath_00 )
+summary(maxTfit00_1)  
+
+```
+
+These two extremes and their linear models are plotted in the following figure; it is clear that the multiple regression is a much better model of temperature trends, consistent with the higher r-squared value.  
+
 
 ```{r}
 ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
@@ -217,7 +223,7 @@ ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
         title = "Maximum Daily Temperature in Central Park") +
     xlab(label = "Year") +
     ylab(label = "Maximum daily temperature") +
-    ggtitle(label = "Maximum Daily Temperature in Central Park")
+    ggtitle(label = "Maximum Daily Temperature in Central Park")  
 #    stat_smooth(method = "lm",
 #            formula = y ~ x,
 #            geom = "smooth",
@@ -225,126 +231,39 @@ ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
 #            show.legend = F)
 ```
 
-```{r}
-NYweath_48 <- subset (NYweath_sub, year > 1947) # subsetting to 1948 and later for comparison with JFK data
-xkabledplyhead(NYweath_48)
+To create an even better model, we'd need to use sinusoidal functions that capture the cyclical variation of weather with season.
 
-```
-
-## Linear regression of TMAX \~ year from 1949 on.
-
-```{r}
-maxTfit48_0 <- lm(formula = TMAX ~ year, data = NYweath_48 )
-summary(maxTfit48_0)
-```
-
-## Linear regression of TMAX \~ year + month from 1948 on.
-
-```{r}
-maxTfit48_1 <- lm(formula = TMAX ~ year + month, data = NYweath_48 )
-summary(maxTfit48_1)
-
-```
-
-## Multiple linear regression for JFK from 1948 on
-
-```{r}
-jmaxTfit1 <- lm(formula = TMAX ~ year + month, data = JFKweath_sub )
-summary(jmaxTfit1)
-
-```
-
-```{r}
-NYweath_00 <- subset(NYweath_sub, year > 1899) 
-# subsetting to 20th century and later
-xkabledplyhead(NYweath_00)
-
-```
-
-```{r, results = "asis"}
-
-maxTfit00_0 <- lm(formula = TMAX ~ year, data = NYweath_00 )  
-summary(maxTfit00_0)  
-
-maxTfit00_1 <- lm(formula = TMAX ~ year + month, data = NYweath_00 )
-
-summary(maxTfit00_1)
-
-maxTfit00_2 <- lm(formula = TMAX ~ year * month, data = NYweath_00 )
-
-summary(maxTfit00_2)
-```
-
-```{r}
-
-#Plotting all TMAX data from 1900 on
-ggplot(NYweath_00, aes(x = DATE, y = TMAX, color = month)) + 
-    geom_point(alpha = 0.6) +
-    scale_color_manual(values = c("01" = "purple4",
-                                  "02" = "purple",
-                                  "03" = "dodgerblue",
-                                  "04" = "cyan4",
-                                  "05" = "yellow",
-                                  "06" = "darkgoldenrod1",
-                                  "07" = "red",
-                                  "08" = "orange", 
-                                  "09" = "yellow",
-                                  "10" = "green",
-                                  "11" = "turquoise",
-                                  "12" = "steelblue")) +
-      labs(
-        x = "Year",
-        y = "Maximum Daily Temperature",
-        title = "Maximum Daily Temperature in Central Park") +
-    xlab(label = "Year") +
-    ylab(label = "Maximum daily temperature") +
-    ggtitle(label = "Maximum Daily Temperature in Central Park") +
-    stat_smooth(method = "lm",
-            formula = y ~ x,
-            geom = "smooth",
-            color = "black",
-            show.legend = F)
-```
-
-```{r}
-ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
-    geom_point() +
-    scale_color_manual(values = c("01" = "purple4",
-                                   "07" = "red"), na.value = NA) +
-    geom_abline(aes(intercept = -11.05508, slope = 0.02539), col = "black", size = 1) + 
-    geom_abline(aes(intercept = 34.98295, slope = 0.02539), col = "black", size = 1) +
-  
-    labs(
-        x = "Year",
-        y = "Maximum Daily Temperature",
-        title = "Maximum Daily Temperature in Central Park") +
-    xlab(label = "Year") +
-    ylab(label = "Maximum daily temperature") +
-    ggtitle(label = "Maximum Daily Temperature in Central Park")
-```
 
 ## Central Park v. Global average - Chris
 
 ## JFK data, comparable? - Emily
 
-```{r}
+We wondered whether these trends were true for other locations in the New York City area. To assess this, we found data from another NOAA station at JFK International Airport. Because these data date only as far back as the Airport (which was built in 1948), we focused on 1948 on, computing linear models for both regions for this time window.  
 
-#Subsetting central park data to observations from 1948 and later for comparison with JFK data
+We were suprised to notice that the slope of the Central Park model for 1948 on was lower than that including observations from 1900 on; only 0.014 degrees per year compared to 0.025. This suggests that average Central Park warming was greater in the first half of the 20th century than in the second half-- which is not what we would intuit based on the understanding that the global rate of warming is increasing.  
 
-maxTfit48_0 <- lm(formula = TMAX ~ year, data = NYweath_48 )
-summary(maxTfit48_0)
+We also found a higher warming rate at the JFK airport sight, of approximately 0.033 degrees Fahrenheit per year.  
+
+```{r, echo = FALSE}
+
+#Linear models from 1948 on
 
 maxTfit48_1 <- lm(formula = TMAX ~ year + month, data = NYweath_48 )
 summary(maxTfit48_1)
 
-maxTfit48_2 <- lm(formula = TMAX ~ year*month, data = NYweath_48 )
-summary(maxTfit48_2)
-
 # Multiple linear regression for JFK (from 1948 on  
 jmaxTfit1 <- lm(formula = TMAX ~ year + month, data = JFKweath_sub )
-summary(jmaxTfit1)
+summary(jmaxTfit1)  
 
 ```
+
+To see whether the different warming rates in Central Park post-1900 and post-1948, and at JFK airport are real, we examined the 95 percent confidence intervals associated with each of the three slopes.  
+
+```{r}
+warming_compare <- data.frame(col1 = c("Central Park", "Central Park", "JFK"), col2 = c("1900", "1948", "1948"), col3 = c("x", "y", "z") )
+
+```
+
 
 How did thinking change? reframing of questioning?\
 Additional data to test our hypothesis of causality
