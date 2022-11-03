@@ -694,15 +694,21 @@ The next observation our team wanted to explore was the changes in precipitation
 
 Following our outlier analysis, we built linear models for total yearly precipitation and snowfall. For the linear model of precipitation, we observed a very weak positive correlation between precipitation and time. However, this was likely a result of the increased number of outliers in yearly precipitation in more recent years which coincide with our analysis.  
 
-The last observation we looked to explore was the effect of human activity on temperature. The COVID-19 lockdown was an ideal opportunity to observe acute effect of large-scale changes in human activity. We compared the pre- and post- COVID-19 lockdown seasonal temperatures to determine if there were statistical changes associated with the lockdown. We found that the average post-lockdown spring temperatures were significantly lower than the average spring temperatures observed pre-lockdown. This observation differs from documented changes in temperature that occurred due to lock down. This may be a result of the location of Central Park within New York City and warrants additional exploration.  
+The last topic we looked to explore was the effect of human activity on temperature. The COVID-19 lockdown was an ideal opportunity to observe acute effect of large-scale changes in human activity. We compared the pre- and post- COVID-19 lockdown seasonal temperatures to determine if there were statistical changes associated with the lockdown. We found that the average post-lockdown spring temperatures were significantly lower than the average spring temperatures observed pre-lockdown. This observation differs from documented changes in temperature that occurred due to lock down. This may be related to the site and local environment of Central Park within New York City and warrants additional exploration.  
 
-Overall, our team was able to see clear trends and correlations in the Central Park Weather since 1900. Some of these observations were aligned to recorded patterns while other have some difference from these documented patterns. These discrepancies may be a result of the location of data collection and provides an avenue for future exploration. Additional data would allow us to fully explore the effect of weather from different locations within New York City.  
+Overall, our team was able to see clear trends and correlations in the Central Park Weather since 1900. Some of these observations were aligned to recorded patterns while other have some difference from these documented patterns. These discrepancies may be a result of the location of data collection and provides an avenue for future exploration. Additional data would allow us to explore more fully the geographical and local environmental correlations with weather patterns in different locations within New York City.  
 
 
 ## References
 
-Parida, B. R., Bar, S., Kaskaoutis, D., Pandey, A. C., Polade, S. D., & Goswami, S. (2021). Impact of COVID-19 induced lockdown on land surface temperature, aerosol, and urban heat in Europe and North America. Sustainable cities and society, 75, 103336. https://doi.org/10.1016/j.scs.2021.103336  
+NOAA National Centers for Environmental Information, _Monthly Global Climate Report for Annual 2021_, published online January 2022, retrieved on November 2, 2022 from https://www.ncei.noaa.gov/access/monitoring/monthly-report/global/202113  
 
-NOAA National Centers for Environmental Information, Monthly Global Climate Report for Annual 2021, published online January 2022, retrieved on November 2, 2022 from https://www.ncei.noaa.gov/access/monitoring/monthly-report/global/202113  
+NOAA National Centers for Environmental Information, "Climate Data Online." Custom data requests and downloads retrieved on October 1 (Central Park data) and October 16, 2022 (JFK data) from https://www.ncdc.noaa.gov/cdo-web/  
+
+Parida, B. R., Bar, S., Kaskaoutis, D., Pandey, A. C., Polade, S. D., & Goswami, S. (2021). _Impact of COVID-19 induced lockdown on land surface temperature, aerosol, and urban heat in Europe and North America._ Sustainable cities and society, 75, 103336. https://doi.org/10.1016/j.scs.2021.103336  
+
+Storms, C. (2015). _New York City Panel on Climate Change 2015 Report: Executive summary._ Ann NY Acad Sci, 1336, 9-17. Retrieved on October 29, 2022 from https://nyaspubs.onlinelibrary.wiley.com/doi/10.1111/nyas.14008  
 
 United States Environmental Protection Agency, Climate Change Indicators: U.S. and Global Precipitation, published online August 2022, retrieved on November 2, 2022 from https://www.epa.gov/climate-indicators/climate-change-indicators-us-and-global-precipitation  
+
+United States Environmental Protection Agency, "Learn About Heat Islands," Retrieved on November 3, 2022 from https://www.epa.gov/heatislands/learn-about-heat-islands  
