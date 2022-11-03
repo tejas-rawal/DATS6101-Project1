@@ -231,12 +231,12 @@ ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
 #            show.legend = F)
 ```
 
-To create an even better model, we'd need to use sinusoidal functions that capture the cyclical variation of weather with season.
+To create an even better model, we'd need to use sinusoidal functions that capture the cyclical variation of weather with season, but that takes us into scientific and time series modeling.  
 
 
 ## Central Park v. Global average - Chris
 
-## JFK data, comparable? - Emily
+## Consideration of another New York location
 
 We wondered whether these trends were true for other locations in the New York City area. To assess this, we found data from another NOAA station at JFK International Airport. Because these data date only as far back as the Airport (which was built in 1948), we focused on 1948 on, computing linear models for both regions for this time window.  
 
@@ -260,7 +260,7 @@ summary(jmaxTfit1)
 To see whether the different warming rates in Central Park post-1900 and post-1948, and at JFK airport are real, we examined the 95 percent confidence intervals associated with each of the three slopes.  
 
 ```{r}
-warming_compare <- data.frame(col1 = c("Central Park", "Central Park", "JFK"), col2 = c("1900", "1948", "1948"), col3 = c("0.025", "0.014", "0.033"), col4 =  )
+warming_compare <- data.frame(col1 = c("Central Park", "Central Park", "JFK"), col2 = c("1900", "1948", "1948"), col3 = c("0.025", "0.014", "0.033"), col4 =  c("[0.023, 0.028]","[]","[]"))
 
 ```
 
@@ -272,11 +272,13 @@ Additional data to test our hypothesis of causality
 
 ## Linear models of precipitation trends over time - Chris
 
-## Correlation between temp / precip -- Emily ... think about subsequent analyses
+## Correlations between temperature and precipitation -- Emily ... think about subsequent analyses
 
 ## Lockdown - Chris
 
-## Conclusion- terse summary of findings, restate new questions from all sections, ideas for future analyses if you give us more money.
+## Conclusion
+
+[terse summary of findings, restate new questions from all sections, ideas for future analyses if you give us more money.]
 
 If we have time, summarize what we learned from each variable, and new
 questions?
