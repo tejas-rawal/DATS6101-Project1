@@ -1,12 +1,20 @@
 ---
 title: "Project writeup"
-author: "Emily"
+author: "Chris, Tejas, and Emily"
 date: "2022-10-29"
 output: html_document
 ---
+output:
+  html_document:
+    code_folding: hide
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+options(scientific=T, digits = 3) 
 ```
 
 
@@ -24,11 +32,7 @@ library(ezids)
 library(dplyr)
 library(tibble)
 library(gridExtra)
-```
 
-## Emily's starter Code
-
-```{r, results="asis"}
 #loading data 
 
 NYweath <- data.frame(read.csv("data/NYC_weather_1869_2022.csv"))
@@ -36,21 +40,6 @@ NYweath <- data.frame(read.csv("data/NYC_weather_1869_2022.csv"))
 JFKweath <- data.frame(read.csv("data/JFK_weather_1949-2022.csv"))
 #xkablesummary(JFKweath)
 
-```
-
-```{r, results="asis"}
-#loading packages and data 
-
-NYweath <- data.frame(read.csv("data/NYC_weather_1869_2022.csv"))
-#xkablesummary(NYweath)
-#str(NYweath)                      
-#cablehead(NYweath, n=5)
-#tail(NYweath, n=2)
-#nrow(NYweath)
-
-```
-
-```{r, r = "as is"}
 #converting to R date format and adding columns for day, month, and year
 NYweath$DATE <- as.Date(NYweath$DATE)
 NYweath$day <- format(NYweath$DATE, format="%d")
@@ -96,9 +85,6 @@ JFKweath$month <- as.factor(JFKweath$month)
 #creating a subset of the weather data that are only date- and temperature-related
 JFKweath_sub <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
 xkablesummary(JFKweath_sub)
-```
-
-``` {r}
 
 # Creating columns for MONTHLY averages of TMAX, TMIN, PRCP, and
 # SNOW. Adding columns for MONTHLY totals of PRCP and SNOW. 
@@ -118,7 +104,6 @@ colnames(month_snow_avg)[3] <- "SNOW_AVG"
 month_snow_total <- aggregate(SNOW ~ month + year, NYweath, sum)
 colnames(month_snow_total)[3] <- "SNOT_TOT"
 
-
 monthly_weather <- data.frame(month_tmax_avg, 
                               month_tmin_avg$TMIN,
                               month_precip_avg$PRCP_AVG,
@@ -128,11 +113,6 @@ monthly_weather <- data.frame(month_tmax_avg,
 colnames(monthly_weather)[4:8] <- c("TMIN", "PRCP_AVG", "PRCP_TOT", "SNOW_AVG", "SNOW_TOT")
 
 monthly_weather_100yr <- subset(monthly_weather, monthly_weather$year > 1899 & monthly_weather$year < 2022)
-
-
-```
-
-``` {r}
 
 # Doing the same for YEARLY data
 # Creating columns for YEARLY averages of TMAX, TMIN, PRCP, and
@@ -169,7 +149,7 @@ yearly_weather_100yr <- subset(yearly_weather, yearly_weather$year > 1899 & year
 ```
 
 
-As scientists, our team is curious about how humans can affect the
+As a group of scientists, our team is curious about how humans can affect the
 natural environment. We wondered if weather conditions in a highly
 populated region might correlate with notable human activities on a
 global or local scale.
@@ -304,7 +284,7 @@ all_eras %>%
   scale_fill_brewer(palette="Dark2")
 ```
 
-The distributions of each era look similar, however the calculated average daily maximum temperatures between each era did indicate a slight difference. To test the statistical significance of these differences, we ran an ANOVA test comparing the three eras.
+The distributions of each era look similar, however the calculated average daily maximum temperatures between each era did indicate a slight difference. To test the statistical significance of these differences, we ran an ANOVA test comparing the three eras.  
 
 ```{r anova and tukey, results='asis'}
 # run ANOVA
@@ -335,7 +315,7 @@ maxTfit00_0 <- lm(formula = TMAX ~ year, data = NYweath_00 )
 summary(maxTfit00_0)  
 ```
 
-The poor fit is likely due to the wide range of daily temperatures that occur in a given year as a result of seasonal variation. The following plot of daily maximum temperatures shows the wide variance of the data around the linear model. 
+The poor fit is likely due to the wide range of daily temperatures that occur in a given year as a result of seasonal variation. The following plot of daily maximum temperatures shows the wide variance of the data around the linear model.  
 
 ```{r}
 ggplot(NYweath_00, aes(x = DATE, y = TMAX, color = month)) + 
@@ -367,7 +347,6 @@ ggplot(NYweath_00, aes(x = DATE, y = TMAX, color = month)) +
 ```
 
 
-## Linear regression of TMAX \~ year + month from 1900 on.
 
 ```{r}
 # Linear regression of TMAX \~ year from 1900 on.
@@ -375,7 +354,7 @@ maxTfit00_0 <- lm(formula = TMIN ~ year, data = NYweath_00 )
 summary(maxTfit00_0)  
 ```
 
-In order to improve the fit and model temperature trends more completely, we decided to account for seasonal variation by also including month as a categorical regressor. The resulting fit has an r-squared value of 0.775 and a slope of 0.025 degrees Fahreinheit per year, with all fit parameters' p-values well below 0.05. The different intercepts for the each level of the categorical variable (the twelve months of the year) indicate that January is the coldest and July the hottest month in Central Park, with an average difference in maximum daily temperature of approximately 46 degrees Fahrenheit in any given year over this window.  
+In order to improve the fit and model temperature trends more completely, we decided to account for seasonal variation by also including month as a categorical regressor. The resulting fit has an r-squared value of 0.775 and a slope of 0.025 degrees Fahrenheit per year, with all fit parameters' p-values well below 0.05. The different intercepts for the each level of the categorical variable (the twelve months of the year) indicate that January is the coldest and July the hottest month in Central Park, with an average difference in maximum daily temperature of approximately 46 degrees Fahrenheit in any given year over this window.  
 
 
 ```{r}
@@ -388,7 +367,9 @@ These two extremes and their linear models are plotted in the following figure; 
 
 
 ```{r}
-ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
+#plot of just July and January
+
+gplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
     geom_point() +
     scale_color_manual(values = c("01" = "purple4",
                                    "07" = "red"), na.value = NA) +
@@ -409,11 +390,11 @@ ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
 #            show.legend = F)
 ```
 
-To create an even better model, we'd need to use sinusoidal functions that capture the cyclical variation of weather with season.  
+To create an even better model, we'd need to use sinusoidal functions that capture the cyclical variation of weather with season; this would take us into scientific data analysis and time series modeling and is a topic for future consideration.  
 
-## Central Park v. Global average - Chris  
+## Comparison of Central Park warming trends to global average - Chris  
 
-## JFK data, comparable?  - Emily  
+## Consideration of another New York location  
 
 We wondered whether these trends were true for other locations in the New York City area. To assess this, we found data from another NOAA station at JFK International Airport. Because these data date only as far back as the Airport (which was built in 1948), we focused on 1948 on, computing linear models for both regions for this time window.  
 
@@ -421,8 +402,43 @@ We were suprised to notice that the slope of the Central Park model for 1948 on 
 
 We also found a higher warming rate at the JFK airport site, of approximately 0.033 degrees Fahrenheit per year.  
 
-How did thinking change? reframing of questioning?  
-Additional data to test our hypothesis of causality  
+We were surprised to notice that the slope of the Central Park model for 1948 on was lower than that including observations from 1900 on; only 0.014 (r-squared = 0.771, all p << 0.05) degrees per year compared to 0.025 (r-squared = 0.773, all p << 0.05). This suggests that average Central Park warming was greater in the first half of the 20th century than in the second half-- which is not what we would intuit based on the understanding that the global rate of warming is increasing.  
+
+We also found a higher warming rate at the JFK airport site, of approximately 0.033 degrees Fahrenheit per year.  
+
+```{r, echo = FALSE}
+
+#Linear models from 1948 on
+
+maxTfit48_1 <- lm(formula = TMAX ~ year + month, data = NYweath_48 )
+summary(maxTfit48_1)
+
+# Multiple linear regression for JFK (from 1948 on  
+jmaxTfit1 <- lm(formula = TMAX ~ year + month, data = JFKweath_sub )
+summary(jmaxTfit1)  
+
+```
+
+To see whether the different warming rates in Central Park post-1900 and post-1948, and at JFK airport are real, we examined the 95 percent confidence intervals associated with each of the three slopes.  
+
+```{r}
+warming_compare <- data.frame(col1 = c("Central Park", "Central Park", "JFK"), col2 = c("1900 - 2022", "1948 - 2022", "1948 - 2022"), col3 = c("0.025", "0.014", "0.033"), col4 =  c("[0.023, 0.028]","[0.009, 0.019]","[0.029, 0.038]"))
+
+colnames(warming_compare)[1] <- "Location"
+colnames(warming_compare)[2] <- "Time range"
+colnames(warming_compare)[3] <- "Slope"
+colnames(warming_compare)[4] <- " 95 % Confidence interval"
+
+xkabledply(warming_compare)
+
+```
+
+The confidence intervals for the slope of the three models does not overlap, suggesting that the warming rates are substantially different in the three models. This suggests that:  
+1. Temperature trends in Central Park are not strictly linear between 1900 and 2022.  
+2. The rate of warming at JFK airport is actually greater than that in Central Park between 1948 and 2022.  
+
+We hypothesize that these trends could be related to rate of development in the areas in question, as concrete can hold more heat than a non-built environment. To test this hypothesis, we could look for other data sets for these locations over the same time period that include some measure of construction.  
+
 
 ## Precipitation trends -Tejas' outlier analysis + snowfall at Christmas
 
@@ -478,7 +494,20 @@ There is no clear trend in the linear model fit in total yearly Central Park pre
 
 For total yearly snowfall in Central Park since 1900, there was no statistically significant trend observed in the data. 
 
-## Correlation between temp / precip -- Emily  ... think about subsequent analyses
+## Non-time-dependent relationships between weather variables  
+
+As we move forward with these data, we will further explore relationships between weather variables. For a preview of how this might look, we created a simple correlation plot of all numeric variables for Central Park since 1900.
+
+```{r}
+NYweath_num <- subset(NYweath_00, select = c(year, TMAX, TMIN, TAVG, PRCP, SNOW))
+str(NYweath_num)
+weathcor <- cor(NYweath_num, use = "pairwise.complete.obs")
+corrplot::corrplot(weathcor)
+cor
+
+```
+
+Preliminarily, it appears that the slight correlation between year and maximum and minimum daily temperatures is reflected here, and that snow has an inverse correlation with the temperature variables. Bringing month back in as a categorical variable might be interesting here. We also note that there seems to be an inverse correlation between average daily temperature and year. However, the plot is only comparing pairwise relationships for which there are data-- and not every day has data for average daily temperature, so these data may not be appropriately representative.  
 
 ## Lockdown - Chris
 
@@ -558,7 +587,7 @@ t.test(covid_lockdown_spring$TMAX)
 
 A t-test was performed to compare the means of the pre-lockdown and post-lockdown maximum daily temperatures (Table C2). For the summer lockdown months, the summer following lockdown appeared to be warmer on average. However, this was not a statistically significant difference in the average maximum temperatures.
 
-The spring lockdown months showed a statistically significant difference in the means pre- and post- lockdown order.The post-lockdown months were significantly cooler than the years preceding the COVID-19 pandemic. 
+The spring lockdown months showed a statistically significant difference in the means pre- and post- lockdown order. The post-lockdown months were significantly cooler than the years preceding the COVID-19 pandemic. 
 
 
 

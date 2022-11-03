@@ -51,7 +51,7 @@ JFKweath$TAVG <- as.numeric(JFKweath$TAVG)
 JFKweath$year <- as.numeric(JFKweath$year)
 
 #Making month a factor
-NYweath$month <- as.factor(NYweath$month)
+JFKweath$month <- as.factor(JFKweath$month)
 
 #creating a subset of the weather data that are only date- and temperature-related
 JFKweath_sub <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
