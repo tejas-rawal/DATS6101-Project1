@@ -31,7 +31,7 @@ xkablesummary(NYweath)
 
 ## Temperature - stat tests of temp trends over time
 
-We started by understanding the distributions of our temperature data to rule out any anomalies or peculiar characteristics. Another aspect of our data that we could potentially account for is seasonality, as temperatures ranges differ between summer and winter months.
+We started by understanding the distributions of our temperature data to rule out any anomalies or unusual characteristics.  
 
 ```{r temperature distributions, results='asis'}
 mean_tmax <- mean(NYweath$TMAX)
@@ -67,18 +67,16 @@ NYweath_Month %>%
   scale_fill_manual(values=c("red", "blue"))
 ```
 
-The understand the effect of seasonality on the temperature data, we calculated the average daily temperatures by month. As we can see, there is a trend of rising temperatures when we move from the colder, winter months to the warmer, summer months. This is to be expected since summer will have higher average daily maximum and minimum temperatures than winter.  
+The understand the effect of seasonality on the temperature data, we calculated the average daily temperatures by month. As we can see here, there is a trend of rising temperatures when we move from winter to summer months. This is to be expected since summer will have higher average daily maximum and minimum temperatures than winter. Seasonality is an aspect of our data that we might need to account for in our testing, as temperatures ranges clearly differ between summer and winter months.  
 
-Now that we have insight into the distribution of our variables, it was time to start assessing whether the data confirmed any significant changes in daily temperatures over the timeline of our dataset. Specifically, we want to test whether changes in average daily maximum temperatures coincide with the documented rise in global temperatures over the last century. A report on the global change in Earth's temperature and climate is available via the National Oceanic And Atmospheric Administration <https://www.ncdc.noaa.gov/sotc/global/202113>.  
+Now that we have insight into the distribution of our variables, it was time to start assessing whether the data confirmed any significant changes in daily temperatures over the time. Specifically, we want to test whether changes in average daily maximum temperatures coincide with the documented rise in global temperatures over the last century. A report on the global change in Earth's temperature and climate is available via the National Oceanic And Atmospheric Administration <https://www.ncdc.noaa.gov/sotc/global/202113>.  
 
-#### Results of Era analysis
-
-In an effort to categorize our `DATE` variable, we grouped the daily temperature observations into 3 distinct eras in American history. The eras are described as:  
+We grouped the daily temperature observations into 3 distinct eras in American history. The eras are described as:  
   1. Industrial Era: 1900-1940  
   2. Cold War Era: 1940-1980  
   3. Modern Era: 1980-Present (2022)  
   
-This distinction was important because we could now compare temperature observations across three different and unique samples. The subset our data into the different eras, we extracted the year of the observation from the `DATE` column and filtered based on the era time range.  
+This distinction was important because we could now compare temperature observations across three independent groups. Each era contains roughly 15,000 daily observations giving us statistically powerful sample sizes to work off of.   
  
 ```{r era distributions}
 industrial_era <- NYweath %>%
@@ -94,9 +92,7 @@ modern_era <- NYweath %>%
   filter(lubridate::year(DATE) >= 1980)
 ```
 
-Each era contains roughly 15,000 daily observations which is an important factor in the analysis we will perform next.  
 
-The distribution of each era is plotted below:  
 ```{r era box plots, results='asis'}
 # modify data set by adding ERA column
 industrial_era <- industrial_era %>%
@@ -122,33 +118,104 @@ all_eras %>%
   scale_fill_brewer(palette="Dark2")
 ```
 
-The calculated average daily maximum temperatures for each era are as follows:  
-  1. Industrial Era: `60.91` $^{\circ}F$  
-  2. Cold War Era: `62.25` $^{\circ}F$  
-  3. Modern Era: `63.06` $^{\circ}F$  
-  
-#### Statistical Test
-  
-These results indicate a change in average daily maximum temperatures between the eras. To test the statistical significance of these difference we ran an ANOVA test comparing the three eras.
+The distributions of each era looks similar, however the calculated average daily maximum temperatures for each suggests a slight difference across the time periods. To verify the statistical significance of these differences, we ran an ANOVA test comparing the three eras.
 
-```{r anova and tukey, results='asis'}
+```{r anova and tukey}
 # run ANOVA
 anova_res <- aov(TMAX ~ Era, data = all_eras)
 xkabledply(anova_res)
 ```
 
-With a p-value of `r pf(51, 2, 44826, lower.tail=F)`, we have verified that the statistical differences between the average daily maximum temperature of the 3 eras is significant. That's good news, but just how difference are they from each other? For that answer, we can turn to Tukey's HSD (honestly significant difference) test. This test helps us compare the differences between all possible pairs of eras and evaluate their significance.  
+With a p-value much lower than our threshold of 0.05, we have verified that the statistical differences between the average daily maximum temperature of the 3 eras is significant.  
+
+That's good news, but just how difference are they from each other? For that answer, we can turn to Tukey's HSD (honestly significant difference) test. This test helps us compare the differences between all possible pairs of our groupings and evaluate their significance.  
 
 ```{r tukey test, results='asis'}
 tukeyAoV <- TukeyHSD(anova_res, conf.level=0.95)
 plot(tukeyAoV, col="red", cex.axis=0.75)
 ```
-The test results confirm that the difference in average daily maximum temperature between each pair of eras is significantly difference. The plot helps highlights these differences.  
+The plot displays the estimated difference between the means of each era comparison, along with a 95% confidence interval. The adjusted p-value for each 2-way comparison was significantly low which indicates that the differences in the average daily maximum temperature between each era were significant.  
 
-Through our analysis of the observations between the three eras, we are able to safely reject the hypothesis that the average daily maximum temperature remains the same. There is significant evidence to suggest that our TMAX variable is increasing over time.  
-
-
+Through this analysis, we are able to safely reject the hypothesis that the average daily maximum temperature remains the same across each era. There is significant evidence to suggest that our TMAX variable is increasing over time. Next, we can utilize linear regressions to dive further into this relationship.  
 
 
 ## Precipitation trends -Tejas' outlier analysis + snowfall at Christmas
 
+As average temperatures on Earth rise, more evaporation occurs which increases overall precipitation. The gauge the effect of this on the local level, we sought to analyze precipitation outliers in our dataset and determine if a significant change has occurred in rainfall over time.  
+
+Outliers are defined as values that lie significantly far from other points in the data. Because there were a lot of days with 0 inches of precipitation that skewed our data, we decided to remove them before calculating our outliers.  
+
+```{r prcp outliers}
+# extract PRCP outlier rows into df variable
+# remove zeros
+# group variable by decade, getting sum for each decade
+prcp_no_zeros <- NYweath %>%
+  filter(PRCP > 0.0 & !is.na(PRCP))
+prcp_boxplot <- boxplot(prcp_no_zeros$PRCP, ylab = "Temperature (°F)")
+
+prcp_outliers <- boxplot.stats(prcp_no_zeros$PRCP)$out
+prcp_outliers.index <- which(prcp_no_zeros$PRCP %in% c(prcp_outliers))
+prcp_outliers_df <- prcp_no_zeros[prcp_outliers.index, ]
+
+prcp_outliers_df.yearly <- prcp_outliers_df %>%
+  mutate(YEAR = lubridate::year(DATE)) %>%
+  group_by(YEAR) %>%
+  summarize(prcp_total = sum(PRCP, na.rm=T), count = n())
+
+# show top 5 years
+top_5_years.prcp_total <- prcp_outliers_df.yearly %>%
+  slice_max(order_by = prcp_total, n = 5)
+
+# group into decades and create bar plot
+prcp_outliers_df.decades <- prcp_outliers_df %>%
+  filter(lubridate::year(DATE) < 2020) %>%
+  mutate(decade = paste(floor(lubridate::year(DATE) / 10) * 10, "s", sep="")) %>%
+  group_by(decade) %>%
+  summarise(prcp_total = sum(PRCP, na.rm=T), count = n())
+```
+```{r prcp outlier plots, results='asis'}
+prcp_outliers_df.yearly %>%
+  ggplot(aes(x=YEAR, y=prcp_total)) +
+    geom_line(na.rm=TRUE, alpha=0.7, color="darkgreen") +
+    geom_point(na.rm = TRUE, fill="#69b3a2", shape = 21) +
+    geom_text_repel(aes(label=YEAR), data=top_5_years.prcp_total) +
+    labs(title="Total Precipitation By Year", x="Year", y="Total Yearly Amount (inches)")
+```
+Looking at the yearly data, we identified a discernible trend of increased variation within the amount of total rainfall within a year starting after 1970. The top 5 years based on total precipitation all reside within the previous half century of data.  
+
+```{r prcp decades, results='asis'}
+prcp_outliers_df.decades %>%
+  ggplot(aes(group=1)) +
+  geom_col(aes(x=decade, y=prcp_total), na.rm=TRUE, alpha=0.8, color="black", fill="darkgreen", position="identity") +
+  geom_line(aes(x=decade, y=count), stat="identity", color="#69b3a2", size=1) +
+  labs(title="Precipitation Outlier Days And Total Precipitation By Decade", x="Decade", y="Total Amount (inches)") +
+  scale_y_continuous(sec.axis=sec_axis(~., name="Days with Outliers"))
+```
+
+Zooming out, we can see a relationship forming between the amount of days with precipitation outlier values and the total precipitation amount occurring over the course of a decade. We see an upwards trend in both values starting in the 1970s, confirming the visual trends analyzed in the yearly totals plot above.  
+
+This coincides with the patterns of increasing average daily temperature we saw in our prior analysis. Although not part of this report, we could further investigate the correlation between temperature and precipitation to determine if the data signals a statistically significant pattern.  
+
+Another indicator of warming trends, especially for a location such as New York City that experiences all 4 seasons regularly, is the amount of snowfall occurring in a given year. In this dataset, there were an unusual amount of missing snowfall observations which made performing this analysis difficult. What we did have consistent values on was snowfall over the Christmas holiday (Christmas Eve and Christmas Day).
+
+```{r snowfall}
+nyc_weather.christmas_snow <- NYweath %>%
+  filter(lubridate::month(DATE) == 12, (lubridate::day(DATE) == 24 | lubridate::day(DATE) == 25)) %>%
+  mutate(YEAR = lubridate::year(DATE)) %>%
+  group_by(YEAR) %>%
+  summarise(snowfall = sum(SNOW, na.rm = T))
+
+# how many years has there been snow?
+with_snow <- nyc_weather.christmas_snow %>%
+  filter(snowfall > 0.0)
+
+# yearly plot for years it snowed
+with_snow %>%
+  ggplot(aes(x=YEAR, y=snowfall)) +
+    geom_line(na.rm=TRUE, alpha=0.7, color="steelblue", size=1.25) +
+    geom_point(na.rm = TRUE, fill="#00edfa", shape = 21) +
+    geom_label_repel(aes(label=YEAR), data=with_snow) +
+    labs(title="Years With Snowfall Over Christmas Holiday", x="Year", y="Snowfall (inches)")
+```
+
+Since 1900, it has snowed on 24 out of 121 Christmas holidays (~20%). Analyzing the plot above, we can see a trend of reducing snowfall events over the Christmas holiday beginning around 1980. Between 1980 and 2021, there have only been 4 Christmas holiday where snowfall occurred (~10%). If we are able to acquire the necessary data, we can further test the significance of our observations to determine if a statistical correlation between snowfall and temperature exists.
