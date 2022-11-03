@@ -242,7 +242,7 @@ We wondered whether these trends were true for other locations in the New York C
 
 We were suprised to notice that the slope of the Central Park model for 1948 on was lower than that including observations from 1900 on; only 0.014 degrees per year compared to 0.025. This suggests that average Central Park warming was greater in the first half of the 20th century than in the second half-- which is not what we would intuit based on the understanding that the global rate of warming is increasing.  
 
-We also found a higher warming rate at the JFK airport sight, of approximately 0.033 degrees Fahrenheit per year.  
+We also found a higher warming rate at the JFK airport site, of approximately 0.033 degrees Fahrenheit per year.  
 
 ```{r, echo = FALSE}
 
@@ -260,7 +260,7 @@ summary(jmaxTfit1)
 To see whether the different warming rates in Central Park post-1900 and post-1948, and at JFK airport are real, we examined the 95 percent confidence intervals associated with each of the three slopes.  
 
 ```{r}
-warming_compare <- data.frame(col1 = c("Central Park", "Central Park", "JFK"), col2 = c("1900", "1948", "1948"), col3 = c("x", "y", "z") )
+warming_compare <- data.frame(col1 = c("Central Park", "Central Park", "JFK"), col2 = c("1900", "1948", "1948"), col3 = c("0.025", "0.014", "0.033"), col4 =  )
 
 ```
 
