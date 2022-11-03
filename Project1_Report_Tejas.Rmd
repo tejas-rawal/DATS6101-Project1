@@ -49,7 +49,7 @@ ggplot(NYweath) +
   scale_fill_manual(name="Column", values=c("Max Temp."="red","Min Temp."="blue"))
 ```
 
-The distributions of both TMAX and TMIN do not appear to be normal at first glance, with TMAX being slightly skewed to the left and TMIN having two peaks. The average daily maximum temperature is `r paste(round(mean_tmax, 2), "°F")`, and the average daily minimum temperature is `r paste(round(mean_tmin, 2), "°F")`. As expected, the distribution of TMAX includes temperature observations that are greater that those of TMIN, with a significant overlap. That overlap can be attributed to seasonality within the data. Because we have a large number of observations, we can assume normality for the sake of our statistical testing moving forward.  
+The distributions of both TMAX and TMIN do not appear to be normal at first glance, with TMAX being slightly skewed to the left and TMIN having two peaks. As expected, the distribution of TMAX includes temperature observations that are greater that those of TMIN, with a significant overlap. That overlap can be attributed to seasonality within the data. Because we have a large number of observations, we can assume normality for the sake of our statistical testing moving forward.  
 
 ```{r month average bar plot, results='asis'}
 NYweath_Month <- NYweath %>%
@@ -67,16 +67,16 @@ NYweath_Month %>%
   scale_fill_manual(values=c("red", "blue"))
 ```
 
-The understand the effect of seasonality on the temperature data, we calculated the average daily temperatures by month. As we can see here, there is a trend of rising temperatures when we move from winter to summer months. This is to be expected since summer will have higher average daily maximum and minimum temperatures than winter. Seasonality is an aspect of our data that we might need to account for in our testing, as temperatures ranges clearly differ between summer and winter months.  
+The understand the effect of seasonality on the temperature data, we calculated the average daily temperatures by month. As we can see here, there is a trend of rising temperatures when we move from winter to summer months. This is to be expected since summer will see higher average daily maximum and minimum temperatures than winter. Seasonality is an aspect of our data that we might need to account for in our testing, as temperatures ranges clearly differ between summer and winter months.  
 
 Now that we have insight into the distribution of our variables, it was time to start assessing whether the data confirmed any significant changes in daily temperatures over the time. Specifically, we want to test whether changes in average daily maximum temperatures coincide with the documented rise in global temperatures over the last century. A report on the global change in Earth's temperature and climate is available via the National Oceanic And Atmospheric Administration <https://www.ncdc.noaa.gov/sotc/global/202113>.  
 
 We grouped the daily temperature observations into 3 distinct eras in American history. The eras are described as:  
   1. Industrial Era: 1900-1940  
   2. Cold War Era: 1940-1980  
-  3. Modern Era: 1980-Present (2022)  
+  3. Modern Era: 1980-Present  
   
-This distinction was important because we could now compare temperature observations across three independent groups. Each era contains roughly 15,000 daily observations giving us statistically powerful sample sizes to work off of.   
+This distinction was important because we could now compare temperature observations across three independent groups, and each era contains roughly 15,000 daily observations giving us statistically powerful sample sizes to work off of.   
  
 ```{r era distributions}
 industrial_era <- NYweath %>%
@@ -118,7 +118,7 @@ all_eras %>%
   scale_fill_brewer(palette="Dark2")
 ```
 
-The distributions of each era looks similar, however the calculated average daily maximum temperatures for each suggests a slight difference across the time periods. To verify the statistical significance of these differences, we ran an ANOVA test comparing the three eras.
+The distribution of each era looks similar, however the calculated average daily maximum temperatures suggests there's a slight difference across the time periods. To verify the statistical significance of these differences, we ran an ANOVA test comparing the three eras.  
 
 ```{r anova and tukey}
 # run ANOVA
@@ -134,14 +134,14 @@ That's good news, but just how difference are they from each other? For that ans
 tukeyAoV <- TukeyHSD(anova_res, conf.level=0.95)
 plot(tukeyAoV, col="red", cex.axis=0.75)
 ```
-The plot displays the estimated difference between the means of each era comparison, along with a 95% confidence interval. The adjusted p-value for each 2-way comparison was significantly low which indicates that the differences in the average daily maximum temperature between each era were significant.  
+The plot displays the estimated difference between the means of each dual-era comparison along with a 95% confidence interval for that difference. The adjusted p-value for each 2-way comparison was practically 0 which indicates that the differences in the average daily maximum temperature between the eras are significant.  
 
-Through this analysis, we are able to safely reject the hypothesis that the average daily maximum temperature remains the same across each era. There is significant evidence to suggest that our TMAX variable is increasing over time. Next, we can utilize linear regressions to dive further into this relationship.  
+Through this analysis, we are able to safely reject the hypothesis that the average daily maximum temperature remains the same across each era. There is significant evidence to suggest that our TMAX variable is increasing over time. We can utilize linear regressions to dive further into this relationship.  
 
 
 ## Precipitation trends -Tejas' outlier analysis + snowfall at Christmas
 
-As average temperatures on Earth rise, more evaporation occurs which increases overall precipitation. The gauge the effect of this on the local level, we sought to analyze precipitation outliers in our dataset and determine if a significant change has occurred in rainfall over time.  
+As average temperatures on Earth rise, more evaporation occurs which increases overall precipitation. To gauge the effect of this on the local level, we sought to analyze precipitation outliers in our dataset and determine if a significant change has occurred in rainfall over time.  
 
 Outliers are defined as values that lie significantly far from other points in the data. Because there were a lot of days with 0 inches of precipitation that skewed our data, we decided to remove them before calculating our outliers.  
 
@@ -196,9 +196,9 @@ Zooming out, we can see a relationship forming between the amount of days with p
 
 This coincides with the patterns of increasing average daily temperature we saw in our prior analysis. Although not part of this report, we could further investigate the correlation between temperature and precipitation to determine if the data signals a statistically significant pattern.  
 
-Another indicator of warming trends, especially for a location such as New York City that experiences all 4 seasons regularly, is the amount of snowfall occurring in a given year. In this dataset, there were an unusual amount of missing snowfall observations which made performing this analysis difficult. What we did have consistent values on was snowfall over the Christmas holiday (Christmas Eve and Christmas Day).
+Another indicator of warming trends, especially for a location such as New York City that experiences all 4 seasons regularly, is the amount of snowfall occurring in a given year. In this dataset, there were an unusual amount of missing snowfall observations which made performing this analysis difficult. What we did have consistent values on was snowfall over the Christmas holiday (Christmas Eve and Christmas Day).  
 
-```{r snowfall}
+```{r snowfall, results='asis'}
 nyc_weather.christmas_snow <- NYweath %>%
   filter(lubridate::month(DATE) == 12, (lubridate::day(DATE) == 24 | lubridate::day(DATE) == 25)) %>%
   mutate(YEAR = lubridate::year(DATE)) %>%
