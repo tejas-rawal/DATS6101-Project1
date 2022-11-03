@@ -152,7 +152,7 @@ atmosphere. We decided to consider local weather trends in a specific
 urban area to see what we might learn.
 
 After some search, we discovered that historical daily weather records
-from locations around the United States are made publicly availably by
+from locations around the United States are made publicly available by
 the National Oceanic and Atmospheric Administrative via their website:
 <https://www.ncdc.noaa.gov/cdo-web>. We found that a data station in the
 middle of Central Park in New York City has made more than 56,000 daily
@@ -204,7 +204,7 @@ ggplot(NYweath_00) +
   scale_fill_manual(name="Column", values=c("Max Temp."="red","Min Temp."="blue"))
 ```
 
-The distributions of both TMAX and TMIN do not appear to be normal at first glance, with TMAX being slightly skewed to the left and TMIN having two peaks. As expected, the distribution of TMAX includes temperature observations that are greater that those of TMIN, with a significant overlap. That overlap can be attributed to seasonality within the data. Because we have a large number of observations, we can assume normality for the sake of our statistical testing moving forward.  
+The distributions of both TMAX and TMIN do not appear to be normal at first glance, with TMAX being slightly skewed to the left and TMIN having two peaks. As expected, the distribution of TMAX includes temperature observations that are greater than those of TMIN, with a significant overlap. That overlap can be attributed to seasonality within the data. Because we have a large number of observations, we can assume normality for the sake of our statistical testing moving forward.  
 
 ```{r month average bar plot, results='asis'}
 NYweath_Month <- NYweath_00 %>%
@@ -283,7 +283,7 @@ xkabledply(anova_res)
 
 The test netted a p-value much lower than our threshold of 0.05, verifying that the statistical differences between the average daily maximum temperature of the 3 eras is significant.  
 
-That's good news, but just how difference are they from each other? For that answer, we can turn to Tukey's HSD (honestly significant difference) test. This test helps us compare the differences between all possible pairs of our groupings and evaluates their significance.  
+That's good news, but just how differenty are they from each other? For that answer, we can turn to Tukey's HSD (honestly significant difference) test. This test helps us compare the differences between all possible pairs of our groupings and evaluates their significance.  
 
 ```{r tukey test, results='asis'}
 tukeyAoV <- TukeyHSD(anova_res, conf.level=0.95)
@@ -376,7 +376,7 @@ ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
 
 To create an even better model, we'd need to use sinusoidal functions that capture the cyclical variation of weather with season; this would take us into scientific data analysis and time series modeling and is a topic for future consideration.  
 
-## Comparison of Central Park warming trends to global average
+## Central Park warming trends compared to global trends
 
 We then wanted to use the linear models developed for the Central Park weather data and compare them to the global trends that have been observed over the similar time period. The ground truth rate of temperature change was found on climate.gov which states, "Earth’s temperature has risen by 0.14° Fahrenheit (0.08° Celsius) per decade since 1880, but the rate of warming since 1981 is more than twice that: 0.32° F (0.18° C) per decade." To appropriately compare the Central Park and Global temperature trends over time. New linear models were built for the Central Park data to align to the time periods from climate.gov.  
 
@@ -684,7 +684,21 @@ The spring lockdown months showed a statistically significant difference in the 
 
 ## Conclusion- terse summary of findings, restate new questions from all sections, ideas for future analyses if you give us more money.    
 
-If we have time, summarize what we learned from each variable, and new questions?
+Our team set out to explore the features of global climate change using a densely populated locale to observe the correlations of human activity and weather conditions. We initially set out to confirm whether the well-documented rising global temperatures were seen in the Central Park weather data and how those trends compare. To dig into this, we started by analyzing the average temperatures in Central Park during three different eras – the Industrial Revolution, Cold War Era, and Modern Era - between 1900 and 2022. An ANOVA analysis was performed and found there were statistically significant differences in temperature between the three eras. The follow-on analysis showed that the largest temperature difference existed between the Industrial Revolution and the Modern Era. 
+
+Knowing there were significant differences in temperature through the time periods, we then explored this further by modelling the temperature over time. We developed a model for TMAX vs year and included month as a categorical variable to account for the seasonal changes is temperature. The resulting model found a strongly correlated, positive correlation between temperature and year. The model showed a rate of increase in temperate of 0.025 degrees Fahrenheit per year.
+
+We used this model as a basis to develop new models in order to compare our observed changes to the global documented rate of temperature change. Using new models, we found that since 1880 Central Park has been increasing in temperature at a significantly higher rate than the global trends. However, for a more recent period, we were unable to generate a meaningful model for the data which that more data may be required to make a meaningful model of temperature changes in NYC since 1981.
+
+The next observation our team wanted to explore was the changes in precipitation patterns over time. For this, we started by analyzing the outliers to determine if there any changes in the variability of precipitation over time. 
+
+Following our outlier analysis, we built linear models for total yearly precipitation and snowfall. For the linear model of precipitation, we observed a very weak positive correlation between precipitation and time. However, this was likely a result of the increased number of outlers in yearly precipitation in more recent year which supports our outlier analysis. 
+
+The last observation we looked to explore was the effect of human activity on temperature. The COVID-19 lockdown was an ideal opportunity to observe acute effect of large-scale changes in human activity. We compared the pre- and post- COVID-19 lockdown seasonal temperatures to determine if there were statistical changes associated with the lockdown. We found that the average post-lockdown spring temperatures were significantly lower than the average spring temperatures observed pre-lockdown. This observation differs from documented changes in temperature that occurred due to lock down. This may be a result of the location of Central Park within New York City and warrants additional exploration.
+
+
+Overall, our team was able to see clear trends and correlations in the Central Park Weather since 1900. Some of these observations were aligned to recorded patterns while other have some difference from these documented patterns. These discrepancies may be a result of the location of data collection and provides an avenue for future exploration. Additional data would allow us to fully explore the effect of weather from different locations within New Yor City. 
+
 
 ## References
 
