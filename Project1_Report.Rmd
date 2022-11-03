@@ -690,7 +690,7 @@ Based on these results, we decided to further explore the relationship by genera
 
 We used this model as a basis to develop new models in order to compare our observed changes to the global documented rate of temperature change. Using new models, we found that since 1880 Central Park has been increasing in temperature at a significantly higher rate than the global trends. However, for a more recent period, we were unable to generate a meaningful model for the data which that more data may be required to make a meaningful model of temperature changes in NYC since 1981.  
 
-The next observation our team wanted to explore was the changes in precipitation patterns over time. For this, we started by analyzing the outliers to determine if there any changes in the variability of precipitation over time.  
+The next topic our team wanted to explore was the changes in precipitation patterns over time. For this, we started by analyzing the outliers to determine if there any changes in the variability of precipitation over time.  
 
 Following our outlier analysis, we built linear models for total yearly precipitation and snowfall. For the linear model of precipitation, we observed a very weak positive correlation between precipitation and time. However, this was likely a result of the increased number of outliers in yearly precipitation in more recent years which coincide with our analysis.  
 
@@ -709,6 +709,6 @@ Parida, B. R., Bar, S., Kaskaoutis, D., Pandey, A. C., Polade, S. D., & Goswami,
 
 Storms, C. (2015). _New York City Panel on Climate Change 2015 Report: Executive summary._ Ann NY Acad Sci, 1336, 9-17. Retrieved on October 29, 2022 from https://nyaspubs.onlinelibrary.wiley.com/doi/10.1111/nyas.14008  
 
-United States Environmental Protection Agency, Climate Change Indicators: U.S. and Global Precipitation, published online August 2022, retrieved on November 2, 2022 from https://www.epa.gov/climate-indicators/climate-change-indicators-us-and-global-precipitation  
+United States Environmental Protection Agency, _Climate Change Indicators: U.S. and Global Precipitation_, published online August 2022, retrieved on November 2, 2022 from https://www.epa.gov/climate-indicators/climate-change-indicators-us-and-global-precipitation  
 
 United States Environmental Protection Agency, "Learn About Heat Islands," Retrieved on November 3, 2022 from https://www.epa.gov/heatislands/learn-about-heat-islands  
