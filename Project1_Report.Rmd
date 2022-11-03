@@ -294,7 +294,7 @@ The plot above displays the estimated difference between the means of each dual-
 
 Through this analysis, we are able to safely reject the hypothesis that the average daily maximum temperature remains the same across each era. There is significant evidence to suggest that our TMAX variable is increasing over time. We can utilize linear regressions to dive further into this relationship.  
 
-## Emily's linear model Linear Models of Temperature over Time
+## Linear Models of Temperature over Time
 
 We then created a linear model of TMAX vs. year to understand the temperature trends since 1900. The fit parameters were statistically significant, and suggested that both the maximum and minimum daily temperatures in New York's Central Park have increased on average over time at a rate of approximately 0.026 degrees per year. While the p-value for this parameter is < 2e-16 (well below the threshold of alpha = 0.05), this overall fit is poor, with an adjusted r-squared value of 0.00245.  
 
@@ -602,7 +602,7 @@ cor
 
 Preliminarily, it appears that the slight correlation between year and maximum and minimum daily temperatures is reflected here, and that snow has an inverse correlation with the temperature variables. Bringing month back in as a categorical variable might be interesting here. We also note that there seems to be an inverse correlation between average daily temperature and year. However, the plot is only comparing pairwise relationships for which there are data-- and not every day has data for average daily temperature, so these data may not be appropriately representative.  
 
-## Lockdown effects on Temperature
+## Lockdown effects on temperature
 
 The last question our team wanted to address was to understand the changes in weather patterns that may be associated with the COVID-19 lockdown. The COVID-19 lockdown had major social, economic, and political impacts in 2020. The lockdown in New York City in Spring of 2020 was one of the earliest in effect and saw unprecedented traffic and life-pattern changes to those who visited and worked in NYC daily.Our team set out to see if these major changes to the city were noticeable in the weather patterns at the time. 
 
@@ -678,32 +678,31 @@ t.test(covid_lockdown_spring$TMAX)
 
 ```
 
-A t-test was performed to compare the means of the pre-lockdown and post-lockdown maximum daily temperatures (Table C2). For the summer lockdown months, the summer following lockdown appeared to be warmer on average. However, this was not a statistically significant difference in the average maximum temperatures.
+A t-test was performed to compare the means of the pre-lockdown and post-lockdown maximum daily temperatures (Table C2). For the summer lockdown months, the summer following lockdown appeared to be warmer on average. However, this was not a statistically significant difference in the average maximum temperatures.  
 
 The spring lockdown months showed a statistically significant difference in the means pre- and post- lockdown order. The post-lockdown months were significantly cooler, with a mean spring temperature of 63.5°F, than the years preceding the COVID-19 pandemic, which had a mean spring temperature of 67.3°F.  This is an interesting finding as similar studies found a decrease in the day Land Surface Temperature during COVID-19 lockdown (Parida et al, 2021). The authors attribute the change in temperature to the change in aerosols in the air. The contrast in results warrants further study to explore this trend.
 
-## Conclusion- terse summary of findings, restate new questions from all sections, ideas for future analyses if you give us more money.    
+## Conclusion
 
-Our team set out to explore the features of global climate change using a densely populated locale to observe the correlations of human activity and weather conditions. We initially set out to confirm whether the well-documented rising global temperatures were seen in the Central Park weather data and how those trends compare. To dig into this, we started by analyzing the average temperatures in Central Park during three different eras – the Industrial Revolution, Cold War Era, and Modern Era - between 1900 and 2022. An ANOVA analysis was performed and found there were statistically significant differences in temperature between the three eras. The follow-on analysis showed that the largest temperature difference existed between the Industrial Revolution and the Modern Era. 
+Our team set out to explore the features of global climate change using a densely populated locale to observe the correlations of human activity and weather conditions. We initially set out to confirm whether the well-documented rise in global temperatures were seen in the Central Park weather data and how those trends compare. To dig into this, we started by analyzing the average temperatures in Central Park during three different eras – the Industrial Revolution, Cold War Era, and Modern Era - between 1900 and 2022. An ANOVA analysis was performed and found there were statistically significant differences in temperature between the three eras. The follow-on analysis showed that the largest temperature difference existed between the Industrial Revolution and Modern Eras.  
 
-Knowing there were significant differences in temperature through the time periods, we then explored this further by modelling the temperature over time. We developed a model for TMAX vs year and included month as a categorical variable to account for the seasonal changes is temperature. The resulting model found a strongly correlated, positive correlation between temperature and year. The model showed a rate of increase in temperate of 0.025 degrees Fahrenheit per year.
+Based on these results, we decided to further explore the relationship by generating some linear models of temperature against time. We developed a model for TMAX vs year and included month as a categorical variable to account for the seasonal changes is temperature. The resulting model found a strongly correlated, positive correlation between temperature and year. The model showed a rate of increase in temperate of 0.025° Fahrenheit per year.  
 
-We used this model as a basis to develop new models in order to compare our observed changes to the global documented rate of temperature change. Using new models, we found that since 1880 Central Park has been increasing in temperature at a significantly higher rate than the global trends. However, for a more recent period, we were unable to generate a meaningful model for the data which that more data may be required to make a meaningful model of temperature changes in NYC since 1981.
+We used this model as a basis to develop new models in order to compare our observed changes to the global documented rate of temperature change. Using new models, we found that since 1880 Central Park has been increasing in temperature at a significantly higher rate than the global trends. However, for a more recent period, we were unable to generate a meaningful model for the data which that more data may be required to make a meaningful model of temperature changes in NYC since 1981.  
 
-The next observation our team wanted to explore was the changes in precipitation patterns over time. For this, we started by analyzing the outliers to determine if there any changes in the variability of precipitation over time. 
+The next observation our team wanted to explore was the changes in precipitation patterns over time. For this, we started by analyzing the outliers to determine if there any changes in the variability of precipitation over time.  
 
-Following our outlier analysis, we built linear models for total yearly precipitation and snowfall. For the linear model of precipitation, we observed a very weak positive correlation between precipitation and time. However, this was likely a result of the increased number of outlers in yearly precipitation in more recent year which supports our outlier analysis. 
+Following our outlier analysis, we built linear models for total yearly precipitation and snowfall. For the linear model of precipitation, we observed a very weak positive correlation between precipitation and time. However, this was likely a result of the increased number of outliers in yearly precipitation in more recent years which coincide with our analysis.  
 
-The last observation we looked to explore was the effect of human activity on temperature. The COVID-19 lockdown was an ideal opportunity to observe acute effect of large-scale changes in human activity. We compared the pre- and post- COVID-19 lockdown seasonal temperatures to determine if there were statistical changes associated with the lockdown. We found that the average post-lockdown spring temperatures were significantly lower than the average spring temperatures observed pre-lockdown. This observation differs from documented changes in temperature that occurred due to lock down. This may be a result of the location of Central Park within New York City and warrants additional exploration.
+The last observation we looked to explore was the effect of human activity on temperature. The COVID-19 lockdown was an ideal opportunity to observe acute effect of large-scale changes in human activity. We compared the pre- and post- COVID-19 lockdown seasonal temperatures to determine if there were statistical changes associated with the lockdown. We found that the average post-lockdown spring temperatures were significantly lower than the average spring temperatures observed pre-lockdown. This observation differs from documented changes in temperature that occurred due to lock down. This may be a result of the location of Central Park within New York City and warrants additional exploration.  
 
-
-Overall, our team was able to see clear trends and correlations in the Central Park Weather since 1900. Some of these observations were aligned to recorded patterns while other have some difference from these documented patterns. These discrepancies may be a result of the location of data collection and provides an avenue for future exploration. Additional data would allow us to fully explore the effect of weather from different locations within New Yor City. 
+Overall, our team was able to see clear trends and correlations in the Central Park Weather since 1900. Some of these observations were aligned to recorded patterns while other have some difference from these documented patterns. These discrepancies may be a result of the location of data collection and provides an avenue for future exploration. Additional data would allow us to fully explore the effect of weather from different locations within New York City.  
 
 
 ## References
 
-Parida, B. R., Bar, S., Kaskaoutis, D., Pandey, A. C., Polade, S. D., & Goswami, S. (2021). Impact of COVID-19 induced lockdown on land surface temperature, aerosol, and urban heat in Europe and North America. Sustainable cities and society, 75, 103336. https://doi.org/10.1016/j.scs.2021.103336
+Parida, B. R., Bar, S., Kaskaoutis, D., Pandey, A. C., Polade, S. D., & Goswami, S. (2021). Impact of COVID-19 induced lockdown on land surface temperature, aerosol, and urban heat in Europe and North America. Sustainable cities and society, 75, 103336. https://doi.org/10.1016/j.scs.2021.103336  
 
-NOAA National Centers for Environmental Information, Monthly Global Climate Report for Annual 2021, published online January 2022, retrieved on November 2, 2022 from https://www.ncei.noaa.gov/access/monitoring/monthly-report/global/202113
+NOAA National Centers for Environmental Information, Monthly Global Climate Report for Annual 2021, published online January 2022, retrieved on November 2, 2022 from https://www.ncei.noaa.gov/access/monitoring/monthly-report/global/202113  
 
-United States Environmental Protection Agency, Climate Change Indicators: U.S. and Global Precipitation, published online August 2022, retrieved on November 2, 2022 from https://www.epa.gov/climate-indicators/climate-change-indicators-us-and-global-precipitation
+United States Environmental Protection Agency, Climate Change Indicators: U.S. and Global Precipitation, published online August 2022, retrieved on November 2, 2022 from https://www.epa.gov/climate-indicators/climate-change-indicators-us-and-global-precipitation  
