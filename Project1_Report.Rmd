@@ -237,6 +237,12 @@ To create an even better model, we'd need to use sinusoidal functions that captu
 
 ## JFK data, comparable?  - Emily  
 
+We wondered whether these trends were true for other locations in the New York City area. To assess this, we found data from another NOAA station at JFK International Airport. Because these data date only as far back as the Airport (which was built in 1948), we focused on 1948 on, computing linear models for both regions for this time window.  
+
+We were suprised to notice that the slope of the Central Park model for 1948 on was lower than that including observations from 1900 on; only 0.014 degrees per year compared to 0.025. This suggests that average Central Park warming was greater in the first half of the 20th century than in the second half-- which is not what we would intuit based on the understanding that the global rate of warming is increasing.  
+
+We also found a higher warming rate at the JFK airport site, of approximately 0.033 degrees Fahrenheit per year.  
+
 How did thinking change? reframing of questioning?  
 Additional data to test our hypothesis of causality  
 
