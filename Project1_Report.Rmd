@@ -25,6 +25,7 @@ library(ezids)
 library(tidyverse)
 library(ggrepel)
 library(gridExtra)
+library(tibble)
 
 #loading data 
 
@@ -294,7 +295,6 @@ The plot displays the estimated difference between the means of each dual-era co
 
 Through this analysis, we are able to safely reject the hypothesis that the average daily maximum temperature remains the same across each era. There is significant evidence to suggest that our TMAX variable is increasing over time. We can utilize linear regressions to dive further into this relationship.  
 
-## Chris's linear model  - blurb  
 
 ## Emily's linear model Linear Models of Temperature over Time
 
@@ -360,7 +360,7 @@ These two extremes and their linear models are plotted in the following figure; 
 ```{r}
 #plot of just July and January
 
-gplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
+ggplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
     geom_point() +
     scale_color_manual(values = c("01" = "purple4",
                                    "07" = "red"), na.value = NA) +
@@ -383,7 +383,44 @@ gplot(NYweath_00, aes(x = year, y = TMAX, color = month)) +
 
 To create an even better model, we'd need to use sinusoidal functions that capture the cyclical variation of weather with season; this would take us into scientific data analysis and time series modeling and is a topic for future consideration.  
 
-## Comparison of Central Park warming trends to global average - Chris  
+## Comparison of Central Park warming trends to global average
+
+We then wanted to use the linear models developed for the Central Park weather data and compare them to the global trends that have been observed over the similar time period. The ground truth rate of temperature change was found on climate.gov which states, "Earth’s temperature has risen by 0.14° Fahrenheit (0.08° Celsius) per decade since 1880, but the rate of warming since 1981 is more than twice that: 0.32° F (0.18° C) per decade." To appropriately compare the Central Park and Global temperature trends over time. New linear models were built for the Central Park data to align to the time periods from climate.gov.
+
+```{r, results = 'asis'}
+
+weather1880 <- subset(monthly_weather, monthly_weather$year > 1879 & monthly_weather$year < 2022)
+yearly_1880 <- subset(yearly_weather, yearly_weather$year > 1879 & yearly_weather$year < 2022)
+all_1880 <- subset(NYweath, NYweath$year > 1880)
+
+yr1880_scatter <- ggplot(yearly_1880, aes(x = year, y = TMAX)) + 
+  geom_point() +
+  labs(x = "Year", y = "Temperature (F)", title = "Yearly Average Maximum Temp")
+
+
+yr1880_line <- yr1880_scatter +
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth",
+              col = "black") +
+  labs(title = "NYC vs Global Temperature Change since 1880")
+
+
+yr1880_global <- yr1880_line + 
+  geom_abline(aes(intercept = 33.2, slope = 0.014, col = "red")) +
+  scale_color_discrete(name = "Locale", labels = c("Global"))
+
+yr1880_global
+
+
+lm_all1880 <- lm(TMAX ~ year + month, data = all_1880)
+#summary(lm_all1880)
+#confint(lm_all1880)
+
+```
+The first model observed the maximum daily temperatures from 1880-2022, shown in the figure above. Based on what we previously learned, this model fits TMAX vs year and includes month as a categorical regressor to account seasonal variation and improve the fit of the model. This resulted in a model fit with an r-squared value of 0.775 and a slope of 0.3° Fahrenheit per decade, with a p-value that is well below 0.05. The 95% confidence interval for this model's slope is 0.28°-0.32° Fahrenheit per decade. The recorded global rate of temperature change, 0.14° Fahrenheit, is outside of this confidence interval. Thus, we can conclude that the rate of temperature change in Central Park is statistically greater than the global rate of change from 1880-2022. 
+
+The second model observed the maximum daily temperatures for the more recent time period of 1981-2022. This model similarly fits TMAX vs year and includes month as a categorical regressor to account seasonal variation and improve the fit of the model. However, in this model there was no statistically significant correlation between TMAX and year. The model resulted in a good fit with an r-squared value of 0.764 with a slope of 0.1° Fahrenheit per decade - but the p-value of this slope was greater than 0.05. This indicates that more data may be required to make a meaningful model of temperature changes in NYC since 1981.
 
 ## Consideration of another New York location  
 
@@ -510,9 +547,9 @@ with_snow %>%
 
 Since 1900, it has snowed on 24 out of 121 Christmas holidays (~20%). Analyzing the plot above, we can see a trend of reducing snowfall events over the Christmas holiday beginning around 1980. Between 1980 and 2021, there have only been 4 Christmas holiday where snowfall occurred (~10%). If we are able to acquire the necessary data, we can further test the significance of our observations to determine if a statistical correlation between snowfall and temperature exists.  
 
-## Linear models of precipitation trends over time - Chris
+## Linear models of precipitation trends over time
 
-After seeing the greater variability in precipitation more recently, we plotted total precipitation and total snowfall and fit these variables to linear models to observe the trends over time (Figure C3).
+After seeing the greater variability in precipitation more recently, we plotted total precipitation and total snowfall and fit these variables to linear models to observe the trends over time, shown in the figure below.
 
 ```{r}
 
@@ -558,9 +595,9 @@ grid.arrange(yr_prcp_scatter_line, yr_snow_scatter_line,
 
 
 ```
-There is no clear trend in the linear model fit in total yearly Central Park precipitation since 1900. The model has a very weak correlation over time, increasing at a rate of 0.75 inches per decade. However, given the poor fit to the data, this is likely a result of more higher leverage data points in more recent times that have artificially increased the overall trend. Our earlier observation of increased variability in yearly precipitation over time supports this explanation. 
+There is no clear trend in the linear model fit in total yearly Central Park precipitation since 1900. The model has a very weak correlation over time, with an r-squared value of 0.09, showing an increase in total precipitation over time at a rate of 0.75 inches per decade, with a p-value less than 0.05. However, given the poor fit to the data, this is likely a result of more higher leverage data points in more recent times that have artificially increased the overall trend. Our earlier observation of increased variability in yearly precipitation over time supports this explanation. 
 
-For total yearly snowfall in Central Park since 1900, there was no statistically significant trend observed in the data. 
+For total yearly snowfall in Central Park since 1900, there was no statistically significant trend observed in the data. This indicates that there is no change in total yearly snowfall over time. This is an interesting contrast to the rising temperature trends that were observed and warrants future exploration. 
 
 ## Non-time-dependent relationships between weather variables  
 
@@ -577,11 +614,11 @@ cor
 
 Preliminarily, it appears that the slight correlation between year and maximum and minimum daily temperatures is reflected here, and that snow has an inverse correlation with the temperature variables. Bringing month back in as a categorical variable might be interesting here. We also note that there seems to be an inverse correlation between average daily temperature and year. However, the plot is only comparing pairwise relationships for which there are data-- and not every day has data for average daily temperature, so these data may not be appropriately representative.  
 
-## Lockdown - Chris
+## Lockdown effects on Temperature
 
-The COVID-19 lockdown had major social, economic, and political impacts in 2020. The lockdown in New York City in Spring of 2020 was one of the earliest in effect and saw unprecedented traffic and life-pattern changes to those who visited and worked in NYC daily.
+The last question our team wanted to address was to understand the changes in weather patterns that may be associated with the COVID-19 lockdown. The COVID-19 lockdown had major social, economic, and political impacts in 2020. The lockdown in New York City in Spring of 2020 was one of the earliest in effect and saw unprecedented traffic and life-pattern changes to those who visited and worked in NYC daily.Our team set out to see if these major changes to the city were noticeable in the weather patterns at the time. 
 
-An analysis was performed to determine if these changes had any affects on the local weather for the city. To do this, the average daily maximum temperatures for spring (considered April and May) and summer (considered June, July and August) were compared using the years leading up to the pandemic and the months following the lockdown order (Figure C4). 
+To do this, the average daily maximum temperatures for spring (considered April and May) and summer (considered June, July and August) were compared using the years leading up to the pandemic and the months following the lockdown order (Figure C4). 
 
 
 ```{r}
@@ -606,7 +643,7 @@ covid_ld_season <- covid_spring_summer_ld %>%
 
 covid_boxplot <- ggplot()+
   geom_boxplot(data = covid_ld_season, aes(y = TMAX, x = Season, fill = Lockdown)) +
-  labs(title = " Figure C4: Temperature Ranges Pre- and Post- COVID Lockdown")
+  labs(title = "Temperature Ranges Pre- and Post- COVID Lockdown")
 
 covid_boxplot
 
@@ -655,7 +692,7 @@ t.test(covid_lockdown_spring$TMAX)
 
 A t-test was performed to compare the means of the pre-lockdown and post-lockdown maximum daily temperatures (Table C2). For the summer lockdown months, the summer following lockdown appeared to be warmer on average. However, this was not a statistically significant difference in the average maximum temperatures.
 
-The spring lockdown months showed a statistically significant difference in the means pre- and post- lockdown order. The post-lockdown months were significantly cooler than the years preceding the COVID-19 pandemic. 
+The spring lockdown months showed a statistically significant difference in the means pre- and post- lockdown order. The post-lockdown months were significantly cooler, with a mean spring temperature of 63.5°F, than the years preceding the COVID-19 pandemic, which had a mean spring temperature of 67.3°F.  This is an interesting finding as similar studies found a decrease in the day Land Surface Temperature during COVID-19 lockdown (Parida et al, 2021). The authors attribute the change in temperature to the change in aerosols in the air. The contrast in results warrants further study to explore this trend.
 
 
 
@@ -665,3 +702,5 @@ If we have time, summarize what we learned from each variable, and new questions
 
 ## References
 
+
+Parida, B. R., Bar, S., Kaskaoutis, D., Pandey, A. C., Polade, S. D., & Goswami, S. (2021). Impact of COVID-19 induced lockdown on land surface temperature, aerosol, and urban heat in Europe and North America. Sustainable cities and society, 75, 103336. https://doi.org/10.1016/j.scs.2021.103336
