@@ -22,6 +22,8 @@ options(scientific=T, digits = 3)
 library(ggplot2)
 library(ezids)
 library(dplyr)
+library(tibble)
+library(gridExtra)
 ```
 
 ## Emily's starter Code
@@ -95,6 +97,77 @@ JFKweath$month <- as.factor(JFKweath$month)
 JFKweath_sub <- subset(JFKweath, select = c(DATE, day, month, year, TMAX, TMIN, TAVG, PRCP, SNOW)) 
 xkablesummary(JFKweath_sub)
 ```
+
+``` {r}
+
+# Creating columns for MONTHLY averages of TMAX, TMIN, PRCP, and
+# SNOW. Adding columns for MONTHLY totals of PRCP and SNOW. 
+
+month_tmax_avg <- aggregate(TMAX ~ month + year, NYweath, mean)
+month_tmin_avg <- aggregate(TMIN ~ month + year, NYweath, mean)
+
+month_precip_avg <- aggregate(PRCP ~ month + year, NYweath, mean)
+colnames(month_precip_avg)[3] <- "PRCP_AVG"
+
+month_precip_total <- aggregate(PRCP ~ month + year, NYweath, sum)
+colnames(month_precip_total)[3] <- "PRCP_TOT"
+
+month_snow_avg <- aggregate(SNOW ~ month + year, NYweath, mean)
+colnames(month_snow_avg)[3] <- "SNOW_AVG"
+
+month_snow_total <- aggregate(SNOW ~ month + year, NYweath, sum)
+colnames(month_snow_total)[3] <- "SNOT_TOT"
+
+
+monthly_weather <- data.frame(month_tmax_avg, 
+                              month_tmin_avg$TMIN,
+                              month_precip_avg$PRCP_AVG,
+                              month_precip_total$PRCP_TOT,
+                              month_snow_avg$SNOW_AVG,
+                              month_snow_total$SNOT_TOT)
+colnames(monthly_weather)[4:8] <- c("TMIN", "PRCP_AVG", "PRCP_TOT", "SNOW_AVG", "SNOW_TOT")
+
+monthly_weather_100yr <- subset(monthly_weather, monthly_weather$year > 1899 & monthly_weather$year < 2022)
+
+
+```
+
+``` {r}
+
+# Doing the same for YEARLY data
+# Creating columns for YEARLY averages of TMAX, TMIN, PRCP, and
+# SNOW. Adding columns for YEARLY totals of PRCP and SNOW. 
+
+year_tmax_avg <- aggregate(TMAX ~ year, NYweath, mean)
+year_tmin_avg <- aggregate(TMIN ~ year, NYweath, mean)
+
+year_precip_avg <- aggregate(PRCP ~ year, NYweath, mean)
+colnames(year_precip_avg)[2] <- "PRCP_AVG"
+
+year_precip_total <- aggregate(PRCP ~ year, NYweath, sum)
+colnames(year_precip_total)[2] <- "PRCP_TOT"
+
+year_snow_avg <- aggregate(SNOW ~ year, NYweath, mean)
+colnames(year_snow_avg)[2] <- "SNOW_AVG"
+
+year_snow_total <- aggregate(SNOW ~ year, NYweath, sum)
+colnames(year_snow_total)[2] <- "SNOT_TOT"
+
+
+yearly_weather <- data.frame(year_tmax_avg, 
+                             year_tmin_avg$TMIN, 
+                             year_precip_avg$PRCP_AVG, 
+                             year_precip_total$PRCP_TOT, 
+                             year_snow_avg$SNOW_AVG, 
+                             year_snow_total$SNOT_TOT)
+colnames(yearly_weather)[3:7] <- c("TMIN", "PRCP_AVG", "PRCP_TOT", "SNOW_AVG", "SNOW_TOT")
+
+
+yearly_weather_100yr <- subset(yearly_weather, yearly_weather$year > 1899 & yearly_weather$year < 2022)
+
+
+```
+
 
 As scientists, our team is curious about how humans can affect the
 natural environment. We wondered if weather conditions in a highly
@@ -250,9 +323,139 @@ Additional data to test our hypothesis of causality
 
 ## Linear models of precipitation trends over time - Chris
 
+After seeing the greater variability in precipitation more recently, we plotted total precipitation and total snowfall and fit these variables to linear models to observe the trends over time (Figure C3).
+
+```{r}
+
+# PRCP linear models and plots
+yearly_prcp_scatter <- ggplot(yearly_weather_100yr, aes(x = year, y = PRCP_TOT)) + 
+  geom_point(color = "darkorchid") +
+  labs(x = "Year", y = "Total Precipitation (in)", title = "Total Yearly Precipitation")      
+
+
+lm_prcp_yr <- lm(PRCP_TOT ~ year, data = yearly_weather_100yr)
+
+
+
+yearly_snow_scatter <- ggplot(yearly_weather_100yr, aes(x = year, y = SNOW_TOT)) + 
+  geom_point(color = "azure4") +
+  labs(x = "Year", y = "Total Snowfall (in)", title = "Total Yearly Snowfall")
+
+lm_snow_yr <- lm(SNOW_TOT ~ year, data = yearly_weather_100yr)
+summary(lm_snow_yr)
+
+
+yr_prcp_scatter_line <- yearly_prcp_scatter+
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth",
+              color = "black",
+              show.legend = F) + 
+  labs(title = "Total Yearly Precipitation")
+
+
+yr_snow_scatter_line <- yearly_snow_scatter+
+  stat_smooth(method = "lm",
+              formula = y ~ x,
+              geom = "smooth",
+              color = "black",
+              show.legend = F)+
+  labs(title = "Total Yearly Snowfall") 
+
+
+grid.arrange(yr_prcp_scatter_line, yr_snow_scatter_line,
+             nrow = 1, 
+             top = "Figure C3: Weather Patterns in Central Park, NYC, from 1900-2021")
+
+
+```
+There is no clear trend in the linear model fit in total yearly Central Park precipitation since 1900. The model has a very weak correlation over time, increasing at a rate of 0.75 inches per decade. However, given the poor fit to the data, this is likely a result of more higher leverage data points in more recent times that have artificially increased the overall trend. Our earlier observation of increased variability in yearly precipitation over time supports this explanation. 
+
+For total yearly snowfall in Central Park since 1900, there was no statistically significant trend observed in the data. 
+
 ## Correlation between temp / precip -- Emily  ... think about subsequent analyses
 
 ## Lockdown - Chris
+
+The COVID-19 lockdown had major social, economic, and political impacts in 2020. The lockdown in New York City in Spring of 2020 was one of the earliest in effect and saw unprecedented traffic and life-pattern changes to those who visited and worked in NYC daily.
+
+An analysis was performed to determine if these changes had any affects on the local weather for the city. To do this, the average daily maximum temperatures for spring (considered April and May) and summer (considered June, July and August) were compared using the years leading up to the pandemic and the months following the lockdown order (Figure C4). 
+
+
+```{r}
+# Generating a lock down box plot
+covid_spring_summer <- subset(NYweath,
+                           year > 2010 &
+                           year <= 2020 &
+                          (month == "04" |month == "05" | 
+                             month == "06" | month == "07" | 
+                             month == "08"))
+covid_spring_summer_ld <- covid_spring_summer %>%
+  add_column(Lockdown = 
+               ifelse(.$year < 2020, "Pre-Lockdown", "Post-Lockdown"),
+             .after = "year")
+covid_spring_summer_ld$Lockdown <- factor(covid_spring_summer_ld$Lockdown, levels = c('Pre-Lockdown', 'Post-Lockdown'))
+
+covid_ld_season <- covid_spring_summer_ld %>%
+  add_column(Season = 
+               ifelse(.$month == "04" | .$month == "05", 
+                      "Spring", "Summer"),
+             .after = "year")
+
+covid_boxplot <- ggplot()+
+  geom_boxplot(data = covid_ld_season, aes(y = TMAX, x = Season, fill = Lockdown)) +
+  labs(title = " Figure C4: Temperature Ranges Pre- and Post- COVID Lockdown")
+
+covid_boxplot
+
+
+
+```
+
+```{r}
+
+# performing pre- and post- lock down t test
+pre_spring <- subset(NYweath,
+                           year > 2010 & year < 2020 &
+                           (month == "04" |month == "05"))
+
+
+pre_summer <- subset(NYweath,
+                           year > 2010 & year < 2020 &
+                           (month == "06" |month == "07" |
+                            month == "08"))
+
+
+covid_lockdown_spring <- subset(NYweath,
+                           year == 2020 &
+                           (month == "04" |month == "05"))
+
+
+covid_lockdown_summer <- subset(NYweath,
+                           year == 2020 &
+                           (month == "06" |month == "07" |
+                            month == "08"))
+
+library(reshape2)
+
+cov_spring_ttest <- t.test(pre_spring$TMAX, covid_lockdown_spring$TMAX)
+cov_spring_ttest
+
+cov_summer_ttest <- t.test(pre_summer$TMAX, covid_lockdown_summer$TMAX)
+cov_summer_ttest
+cov_spring_ttest$conf.int
+
+t.test(pre_spring$TMAX)
+t.test(covid_lockdown_spring$TMAX)
+
+
+```
+
+A t-test was performed to compare the means of the pre-lockdown and post-lockdown maximum daily temperatures (Table C2). For the summer lockdown months, the summer following lockdown appeared to be warmer on average. However, this was not a statistically significant difference in the average maximum temperatures.
+
+The spring lockdown months showed a statistically significant difference in the means pre- and post- lockdown order.The post-lockdown months were significantly cooler than the years preceding the COVID-19 pandemic. 
+
+
 
 ## Conclusion- terse summary of findings, restate new questions from all sections, ideas for future analyses if you give us more money.    
 
